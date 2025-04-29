@@ -9,7 +9,6 @@ interface TypingAreaInt {
   inputRef: React.RefObject<HTMLInputElement | null>;
 }
 
-// --- useRenderer hook remains the same ---
 function useRenderer(
   target: string,
   input: string,
@@ -27,14 +26,14 @@ function useRenderer(
     let cursorClass = "";
 
     if (index === input.length) {
-      cursorClass = "border-l-2 border-blue-500 -ml-[2px]"; // Use border, adjust margin
+      cursorClass = "border-l-2 border-blue-500 -ml-[2px]";
     }
 
     if (index < input.length) {
       if (char === input[index]) {
-        color = "text-emerald-600"; // Correctly typed color
+        color = "text-emerald-600";
       } else {
-        color = "text-red-500 bg-red-100"; // Incorrectly typed color + background
+        color = "text-red-500 bg-red-100";
         mistakes++;
       }
     }
@@ -54,8 +53,7 @@ function useRenderer(
 
 function TypingArea(props: TypingAreaInt) {
   const { target, input, inputRef } = props;
-  const containerRef = useRef<HTMLDivElement>(null); // Outer viewport
-  const textContainerRef = useRef<HTMLDivElement>(null); // Inner scrollable text
+  const textContainerRef = useRef<HTMLDivElement>(null); // scrollable text
 
   const [scrollOffset, setScrollOffset] = useState(0);
 
@@ -77,9 +75,7 @@ function TypingArea(props: TypingAreaInt) {
 
     // 3. if cursor is still at line one then don't put an offset
     if (cursorTop <= lineHeight) {
-      if (scrollOffset !== 0) {
-        setScrollOffset(0);
-      }
+      // there's a tiny jump
       return;
     }
 
@@ -94,14 +90,14 @@ function TypingArea(props: TypingAreaInt) {
   return (
     <>
       <div
-        ref={containerRef}
-        className="mx-auto my-8 max-w-3xl rounded-lg border-2 border-gray-300 p-4 focus-within:border-blue-500" // Style adjustments
+        // ref={containerRef}
+        className="mx-auto my-8 max-w-3xl rounded-lg border-2 border-gray-300 p-4 focus-within:border-blue-500"
         onClick={() => inputRef.current?.focus()}
       >
         {/* Fixed height viewport (3 lines high) that clips content */}
         <div
-          className="overflow-hidden text-left font-mono text-2xl leading-normal" // Adjust text size/leading as needed
-          style={{ height: `calc(3 * 1.5em)` }} // Explicitly 3 lines * line-height
+          className="overflow-hidden text-left font-mono text-2xl leading-normal"
+          style={{ height: `calc(3 * 1.5em)` }}
         >
           {/* Inner container that holds all text and gets translated */}
           <div
@@ -109,9 +105,7 @@ function TypingArea(props: TypingAreaInt) {
             style={{
               // Apply the calculated vertical offset
               transform: `translateY(${scrollOffset}px)`,
-              // Add a transition for smooth scrolling
               transition: "transform 0.1s linear", // Faster, linear might feel more responsive
-              // Ensure wrapping works correctly
               whiteSpace: "pre-wrap", // Handles spaces and line breaks
               wordBreak: "break-word", // Breaks long words if needed
             }}
@@ -120,12 +114,10 @@ function TypingArea(props: TypingAreaInt) {
           </div>
         </div>
       </div>
-
-      {/* Pass potentially updated mistakes count */}
       <StatusBar
         targetLength={target.length}
         inputLength={input.length}
-        mistakesInputed={mistakes} // Pass the ref's current value
+        mistakesInputed={mistakes}
       />
     </>
   );
