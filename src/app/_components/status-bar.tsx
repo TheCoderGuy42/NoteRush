@@ -39,13 +39,6 @@ function StatusBar({
   let displayWPMRef = useRef<HTMLDivElement>(null);
   let displayMistakesRef = useRef<HTMLDivElement>(null);
   let displayAccuracyRef = useRef<HTMLDivElement>(null);
-  console.log("1. This is the game state " + gameState);
-  console.log(`1. mistakes inputed ${mistakesInputed}`);
-
-  useEffect(() => {
-    console.log("🔥 effect body ran, gameState =", gameState);
-    return () => console.log("💧 cleanup ran");
-  }, [gameState]);
 
   useEffect(() => {
     currentInputLengthRef.current = inputLength;
@@ -57,7 +50,6 @@ function StatusBar({
 
   useEffect(() => {
     if (gameState === "running") {
-      console.log("mistakes ");
       currentMistakesRef.current = mistakesInputed; // animate creates a closue so .current is needed
     }
   }, [mistakesInputed, gameState]);
@@ -72,9 +64,6 @@ function StatusBar({
 
   useEffect(() => {
     if (gameState === "running" && !isRunningRef.current) {
-      console.log("3. This is run during running phase once");
-      console.log(`3. mistakes inputed ${mistakesInputed}`);
-
       isRunningRef.current = true;
       startTimeRef.current = Date.now();
       elaspedTimeRef.current = 0;
@@ -86,18 +75,13 @@ function StatusBar({
         const wpm = words / (seconds / 60);
         const mistakes = currentMistakesRef.current;
 
-        const accuracy = currentTargetLengthRef.current
-          ? 100 - (mistakes / currentTargetLengthRef.current) * 100
+        const accuracy = currentInputLengthRef.current
+          ? 100 - (mistakes / currentInputLengthRef.current) * 100
           : 100;
 
         const formattedSeconds = seconds.toFixed(2);
         const formattedWpm = wpm.toFixed(2);
         const formattedAccuracy = accuracy.toFixed(2);
-
-        console.log(
-          `4. This is run during running phase every 16ms (depends on screen refresh rate) Time: ${formattedSeconds} Wpm: ${formattedWpm} Elasped Time: ${elaspedTimeRef.current} Mistakes from ref ${currentMistakesRef.current} GameState: ${gameState}`,
-        );
-        console.log(`4. mistakes inputed ${currentMistakesRef.current}`);
 
         if (dispalyTimerRef.current) {
           dispalyTimerRef.current.textContent = `TIME: ${formattedSeconds}`;
@@ -127,16 +111,11 @@ function StatusBar({
         const wpm = parseFloat(wpmFinal.toFixed(2));
         const mistakes = currentMistakesRef.current;
 
-        const accVal = currentTargetLengthRef.current
-          ? 100 - (mistakes / currentTargetLengthRef.current) * 100
+        const accVal = currentInputLengthRef.current
+          ? 100 - (mistakes / currentInputLengthRef.current) * 100
           : 100;
 
         const accuracy = parseFloat(accVal.toFixed(2));
-
-        console.log(
-          `5. this is run during stopped actually, which is because the gameState has changed, cancelling the animation frame and setting the values ) Time: ${time} Wpm: ${wpm} Elasped Time: ${elaspedTimeRef.current} Mistakes: ${mistakes} Accuracy: ${accuracy} GameState: ${gameState}`,
-        );
-        console.log(`5. mistakes inputed ${currentMistakesRef.current}`);
 
         // if (isPending) return;
         setTime(time);
@@ -144,12 +123,8 @@ function StatusBar({
         setMistakes(mistakes);
         setAccuracy(accuracy);
 
-        console.log("6. Mutate is ran with accuracy + " + accuracy);
-
         if (!isPending) {
           mutate({ wpm, time, mistakes, accuracy });
-        } else {
-          console.log("big news still pending");
         }
 
         rafIdRef.current = null;
@@ -157,7 +132,6 @@ function StatusBar({
         isRunningRef.current = false;
       }
     } else if (gameState === "idle") {
-      console.log("2. This is run during idle phase doing nothing");
       rafIdRef.current = null;
       didSaveRef.current = false;
       isRunningRef.current = false;

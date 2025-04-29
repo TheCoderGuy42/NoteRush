@@ -44,7 +44,6 @@ function App() {
 
   const gameState = useRecordStore((state) => state.status);
   const setGameState = useRecordStore((state) => state.setStatus);
-  console.log("Old Game State " + gameState);
   useEffect(() => {
     let newState = gameState;
 
@@ -63,7 +62,6 @@ function App() {
     if (newState !== gameState) {
       setGameState(newState);
     }
-    console.log("New Game State " + newState);
   }, [targetText, input, gameState, setGameState]);
 
   //no point to a useMemo here
@@ -99,13 +97,9 @@ function App() {
   // // fetch all records
   const records = api.typingEntry.getAll.useQuery();
 
-  console.log("8. Records retrieved ");
-  console.log(records.data);
-
   useEffect(() => {
     if (gameState === "stopped") {
       records.refetch();
-      console.log("9. Refetching the query Records: " + records.data);
     }
   }, [gameState, records.refetch]);
 
