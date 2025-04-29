@@ -6,8 +6,20 @@ import { useRecordStore, type GameStatus } from "@/context/store";
 import type { ActualRecord } from "@/context/data_types";
 import { api } from "@/trpc/react";
 import SignIn from "./sign-in";
+import { signOut } from "@/server/auth/react-client";
+import { useSession } from "@/server/auth/react-client";
+import { useRouter } from "next/navigation";
 
 function App() {
+  const router = useRouter();
+
+  function goToSignIn() {
+    router.push("/signin");
+  }
+  const session = useSession();
+
+  const { data: secretMsg } = api.typingEntry.getSecretMessage.useQuery();
+
   const [input, setInput] = useState("");
 
   const [targetText, setTargetText] = useState("");
@@ -118,7 +130,6 @@ function App() {
           </div>
         </>
       )}
-
       {gameState === "stopped" && (
         <>
           <div className="mx-130 flex flex-col justify-center">
@@ -151,7 +162,35 @@ function App() {
           )}
         </div>
       )}
-      <SignIn />
+      {!session.data && (
+        <>
+          <div>Hello, Stranger</div>
+
+          <button
+            className="cursor-pointer rounded-xl border bg-black px-4 py-2 text-white"
+            onClick={async () => {
+              await goToSignIn();
+            }}
+          >
+            Sign In
+          </button>
+        </>
+      )}
+      {session.isPending && <p>Wait a while for auth to load</p>}
+      {session.data && (
+        <>
+          <div>Hello, {session.data?.user.name}</div>
+
+          <button
+            className="cursor-pointer rounded-xl border bg-black px-4 py-2 text-white"
+            onClick={async () => {
+              await signOut();
+            }}
+          >
+            Sign out
+          </button>
+        </>
+      )}
     </>
   );
 }
