@@ -110,10 +110,6 @@ function App() {
 
   return (
     <>
-      <div className={`mt-5 flex justify-center text-6xl`}>
-        Mindless Typing{" "}
-      </div>
-
       <div className="my-5 flex items-center justify-center opacity-0">
         <input
           type="text"
