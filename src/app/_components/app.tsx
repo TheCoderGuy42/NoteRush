@@ -1,45 +1,18 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
 
 import TypingArea from "./typing-area";
-import StatusBar from "./status-bar";
 import { useRecordStore, type GameStatus } from "@/context/store";
 import type { ActualRecord } from "@/context/data_types";
 import { api } from "@/trpc/react";
-
-// import myRawTextContent from "./assets/snowpark.txt?raw";
-
-// const ai = new GoogleGenAI({
-//   apiKey: "AIzaSyD-ays22lTA5268eKtCFg_1cgs_dwsTnRk",
-// });
-
-async function fetchFromGemini() {
-  try {
-    // const response = await ai.models.generateContent({
-    //   model: "gemini-2.0-flash",
-    //   contents: "Write a paragraph about AI",
-    // });
-    // const text = response.text;
-    const text =
-      await "The Portland spy ring was an espionage group active in the UK between 1953 and 1961. It comprised five people who obtained classified research documents from the Admiralty Underwater Weapons Establishment (AUWE) on the Isle of Portland, Dorset, and passed them to the Soviet Union.Two of the group's members, Harry Houghton and Ethel Gee, were British. They worked at the AUWE and had access to the areas where the research was stored. After they obtained the information it was passed to their handler, Konon Molody—who was acting under the name Gordon Lonsdale. He was a KGB agent acting in the UK under a Canadian passport. Lonsdale would pass the documents in microdot format to Lona and Morris Cohen, two American communists who had moved to the UK using New Zealand passports in the names Helen and Peter Kroger. The Krogers would get the information to Moscow, often by using the cover of an antiquarian book dealer. The ring was exposed in 1960 following a tip-off from the Polish spy Michael Goleniewski about a mole in the Admiralty. The information he supplied was enough to identify Houghton. Surveillance by MI5—the UK's domestic counter-intelligence service—established the connection between Houghton and Gee, and then between them and Lonsdale and finally the Krogers. All five were arrested in January 1961 and put on trial that March. Sentences for the group ranged from fifteen years (for Houghton and Gee) to twenty years (for the Krogers) to twenty-five years (for Lonsdale).Lonsdale was released in 1964 in a spy swap for the British businessman Greville Wynne. The Krogers were exchanged in October 1969 as part of a swap with Gerald Brooke, a British national held on largely falsified claims. The last to be freed were Houghton and Gee, who were given early release in May 1970.";
-    console.log(text);
-    return text;
-  } catch (err) {
-    return "error loading txt ";
-  }
-}
 
 function App() {
   const [input, setInput] = useState("");
 
   const [targetText, setTargetText] = useState("");
-  const { isLoading, isError, error, data, refetch } = useQuery({
-    queryKey: ["test"],
-    queryFn: fetchFromGemini,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+  const geminiPrompt = api.geminiPrompt.generate.useQuery({
+    model: "gemini-2.0-flash",
+    prompt: "prompt",
   });
 
   const gameState = useRecordStore((state) => state.status);
@@ -67,7 +40,7 @@ function App() {
   //no point to a useMemo here
   // when the reset button is pressed transition from idle to running
   const resetGame = () => {
-    refetch();
+    geminiPrompt.refetch();
     setGameState("idle");
     setInput("");
     inputRef.current?.focus();
@@ -83,10 +56,13 @@ function App() {
 
   // if its not loading and dat and data doesn't equal the text set and you're playing the game then don't set the target text
   useEffect(() => {
-    if (data && data != targetText) {
-      setTargetText(data);
+    if (
+      geminiPrompt.data?.generatedText &&
+      geminiPrompt.data.generatedText != targetText
+    ) {
+      setTargetText(geminiPrompt.data.generatedText);
     }
-  }, [data, targetText, setTargetText]);
+  }, [geminiPrompt.data?.generatedText, targetText, setTargetText]);
 
   // on page load focus on the input box
   const inputRef = useRef<HTMLInputElement>(null);
@@ -103,7 +79,6 @@ function App() {
     }
   }, [gameState, records.refetch]);
 
-  // calculating word count
   const isActive = (s: GameStatus) => {
     return s === "running" || s === "idle";
   };
@@ -118,13 +93,15 @@ function App() {
           onChange={handleInput}
         />
       </div>
-      {isLoading && (
+      {geminiPrompt.isLoading && (
         <p className={`mt-50 flex justify-center text-2xl`}>
           Ai is still loading, cut it some slack *_*
         </p>
       )}
-      {isError && <p>there's an error a foot here it is {error.message}</p>}
-      {!isLoading && !isError && (
+      {geminiPrompt.isError && (
+        <p>there's an error a foot here it is {geminiPrompt.error.message}</p>
+      )}
+      {!geminiPrompt.isLoading && !geminiPrompt.isError && (
         <>
           <div className={isActive(gameState) ? "" : "hidden"}>
             <TypingArea target={targetText} input={input} inputRef={inputRef} />
