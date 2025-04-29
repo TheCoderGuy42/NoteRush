@@ -1,4 +1,4 @@
-import App from "./_components/app";
+import App from "../components/app";
 
 export default async function Home() {
   return (

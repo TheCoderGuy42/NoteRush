@@ -5,15 +5,12 @@ import TypingArea from "./typing-area";
 import { useRecordStore, type GameStatus } from "@/context/store";
 import type { ActualRecord } from "@/context/data_types";
 import { api } from "@/trpc/react";
+import SignIn from "./sign-in";
 
 function App() {
   const [input, setInput] = useState("");
 
   const [targetText, setTargetText] = useState("");
-  const geminiPrompt = api.geminiPrompt.generate.useQuery({
-    model: "gemini-2.0-flash",
-    prompt: "prompt",
-  });
 
   const gameState = useRecordStore((state) => state.status);
   const setGameState = useRecordStore((state) => state.setStatus);
@@ -36,6 +33,19 @@ function App() {
       setGameState(newState);
     }
   }, [targetText, input, gameState, setGameState]);
+
+  const geminiPrompt = api.geminiPrompt.generate.useQuery(
+    {
+      model: "gemini-2.0-flash",
+      prompt: "prompt",
+    },
+    {
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      enabled: gameState === "idle", // so it only fetches on specific states
+    },
+  );
 
   //no point to a useMemo here
   // when the reset button is pressed transition from idle to running
@@ -141,6 +151,7 @@ function App() {
           )}
         </div>
       )}
+      <SignIn />
     </>
   );
 }
