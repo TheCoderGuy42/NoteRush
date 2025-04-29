@@ -6,6 +6,7 @@ import TypingArea from "./typing-area";
 import StatusBar from "./status-bar";
 import { useRecordStore, type GameStatus } from "@/context/store";
 import type { ActualRecord } from "@/context/data_types";
+import { api } from "@/trpc/react";
 
 // import myRawTextContent from "./assets/snowpark.txt?raw";
 
@@ -95,17 +96,10 @@ function App() {
   }, []);
 
   // // fetch all records
-
-  const records = useQuery({
-    queryKey: ["testing"],
-    queryFn: getAllRecords,
-    // refetchOnMount: false,
-    // refetchOnWindowFocus: false,
-    // refetchOnReconnect: false,
-  });
+  const records = api.typingEntry.getAll.useQuery();
 
   console.log("8. Records retrieved ");
-  console.log(records);
+  console.log(records.data);
 
   useEffect(() => {
     if (gameState === "stopped") {

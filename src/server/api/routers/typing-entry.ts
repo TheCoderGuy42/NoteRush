@@ -13,7 +13,7 @@ export const typingEntry = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      ctx.db.typingEntry.create({
+      await ctx.db.typingEntry.create({
         data: {
           accuracy: input.accuracy,
           time: input.time,
@@ -22,4 +22,8 @@ export const typingEntry = createTRPCRouter({
         },
       });
     }),
+
+  getAll: publicProcedure.input(z.void()).query(async ({ ctx }) => {
+    return await ctx.db.typingEntry.findMany();
+  }),
 });
