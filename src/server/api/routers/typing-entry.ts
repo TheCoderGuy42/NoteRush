@@ -7,7 +7,7 @@ import {
 } from "@/server/api/trpc";
 
 export const typingEntry = createTRPCRouter({
-  add: publicProcedure
+  add: protectedProcedure
     .input(
       z.object({
         wpm: z.number(),
@@ -17,20 +17,27 @@ export const typingEntry = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.typingEntry.create({
+      const userId = ctx.session.user.id;
+      if (!userId) return;
+      const newEntry = await ctx.db.typingEntry.create({
         data: {
           accuracy: input.accuracy,
           time: input.time,
           wpm: input.wpm,
           mistakes: input.mistakes,
+          userId: userId,
         },
       });
+
+      return newEntry;
     }),
 
   getAll: publicProcedure.input(z.void()).query(async ({ ctx }) => {
-    return await ctx.db.typingEntry.findMany();
-  }),
-  getSecretMessage: protectedProcedure.query(({ ctx, input }) => {
-    return "you can now see this secret message, " + ctx.session.user.name;
+    const userId = ctx.session?.user.id;
+    return await ctx.db.typingEntry.findMany({
+      where: {
+        userId: userId, // Filter results by the logged-in user's ID
+      },
+    });
   }),
 });

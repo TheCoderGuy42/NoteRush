@@ -17,11 +17,14 @@ model TypingEntry {
   mistakes Int
   accuracy Float
 
+  user User @relation(fields: [userId], references: [id])
+
   createdAt DateTime @default(now())
+  userId    String
 }
 
 model User {
-  id            String    @id
+  id            String        @id
   name          String
   email         String
   emailVerified Boolean
@@ -30,6 +33,7 @@ model User {
   updatedAt     DateTime
   sessions      Session[]
   accounts      Account[]
+  TypingEntry   TypingEntry[]
 
   @@unique([email])
   @@map("user")

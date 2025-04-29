@@ -18,8 +18,6 @@ function App() {
   }
   const session = useSession();
 
-  const { data: secretMsg } = api.typingEntry.getSecretMessage.useQuery();
-
   const [input, setInput] = useState("");
 
   const [targetText, setTargetText] = useState("");
@@ -55,7 +53,7 @@ function App() {
       refetchOnMount: false,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
-      enabled: gameState === "idle", // so it only fetches on specific states
+      // enabled: gameState === "idle", // so it only fetches on specific states
     },
   );
 

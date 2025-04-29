@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRecordStore } from "@/context/store";
 import { font } from "@/context/data_types";
 import { api } from "@/trpc/react";
+import { useSession } from "@/server/auth/react-client";
 
 type StatusProps = {
   targetLength: number;
@@ -124,7 +125,12 @@ function StatusBar({
         setAccuracy(accuracy);
 
         if (!isPending) {
-          mutate({ wpm, time, mistakes, accuracy });
+          mutate({
+            wpm,
+            time,
+            mistakes,
+            accuracy,
+          });
         }
 
         rafIdRef.current = null;
