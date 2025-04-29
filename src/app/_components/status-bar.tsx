@@ -64,7 +64,11 @@ function StatusBar({
 
   const utils = api.useUtils();
 
-  const { mutate, isPending } = api.typingEntry.add.useMutation();
+  const { mutate, isPending } = api.typingEntry.add.useMutation({
+    onSuccess: (data) => {
+      utils.typingEntry.getAll.invalidate();
+    },
+  });
 
   useEffect(() => {
     if (gameState === "running" && !isRunningRef.current) {
@@ -123,13 +127,14 @@ function StatusBar({
         const wpm = parseFloat(wpmFinal.toFixed(2));
         const mistakes = currentMistakesRef.current;
 
-        const accVal = mistakes
-          ? (currentTargetLengthRef.current / mistakes) * 100
+        const accVal = currentTargetLengthRef.current
+          ? 100 - (mistakes / currentTargetLengthRef.current) * 100
           : 100;
+
         const accuracy = parseFloat(accVal.toFixed(2));
 
         console.log(
-          `5. this is run during stopped actually, which is because the gameState has changed, cancelling the animation frame and setting the values ) Time: ${time} Wpm: ${wpm} Elasped Time: ${elaspedTimeRef.current} Mistakes: ${mistakes} GameState: ${gameState}`,
+          `5. this is run during stopped actually, which is because the gameState has changed, cancelling the animation frame and setting the values ) Time: ${time} Wpm: ${wpm} Elasped Time: ${elaspedTimeRef.current} Mistakes: ${mistakes} Accuracy: ${accuracy} GameState: ${gameState}`,
         );
         console.log(`5. mistakes inputed ${currentMistakesRef.current}`);
 
