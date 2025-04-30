@@ -21,7 +21,6 @@ function App() {
   const gameState = useRecordStore((state) => state.status);
   const setGameState = useRecordStore((state) => state.setStatus);
   useGameStateMachine(input, target);
-  console.log("gamestate" + gameState);
 
   const geminiPrompt = api.geminiPrompt.generate.useQuery(
     {
@@ -79,35 +78,28 @@ function App() {
   // Handle file upload
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    console.log("file ", file);
     if (!file) return;
 
-    try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const arrayBuffer = event.target?.result;
-        if (!arrayBuffer || typeof arrayBuffer === "string") {
-          console.log("Failed to read file");
-          return;
-        }
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const arrayBuffer = event.target?.result;
+      if (!arrayBuffer || typeof arrayBuffer === "string") {
+        console.log("Failed to read file");
+        return;
+      }
+      const base64 = btoa(
+        new Uint8Array(arrayBuffer).reduce(
+          (data, byte) => data + String.fromCharCode(byte),
+          "",
+        ),
+      );
 
-        // Convert ArrayBuffer to Base64
-        const base64 = btoa(
-          new Uint8Array(arrayBuffer).reduce(
-            (data, byte) => data + String.fromCharCode(byte),
-            "",
-          ),
-        );
+      // Process the PDF using our tRPC mutation
+      processPdf.mutate({ pdfBase64: base64, filename: file.name });
+    };
 
-        // Process the PDF using our tRPC mutation
-        processPdf.mutate({ pdfBase64: base64, filename: file.name });
-      };
-
-      reader.readAsArrayBuffer(file);
-    } catch (error) {
-      console.error("Error processing PDF:", error);
-    } finally {
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
+    reader.readAsArrayBuffer(file);
   };
 
   // Trigger file input click
