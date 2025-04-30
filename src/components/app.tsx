@@ -5,50 +5,22 @@ import TypingArea from "./typing-area";
 import { useRecordStore, type GameStatus } from "@/context/store";
 import type { ActualRecord } from "@/context/data_types";
 import { api } from "@/trpc/react";
-import SignIn from "./sign-in";
-import { signOut } from "@/server/auth/react-client";
-import { useSession } from "@/server/auth/react-client";
-import { useRouter } from "next/navigation";
 import RecordList from "./record-list";
-import PdfUpload from "./pdf-upload";
+import AuthStatus from "./auth-status";
+import useGameStateMachine from "./use-game-state-machine";
 
 function App() {
-  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  function goToSignIn() {
-    router.push("/signin");
-  }
-  const session = useSession();
-
   const [input, setInput] = useState("");
-  const [targetText, setTargetText] = useState("");
+  const [target, setTarget] = useState("");
   const [useCustomText, setUseCustomText] = useState(false);
   const [pdfContent, setPdfContent] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
+  // gameState would need input and target, I like it being in app as you can clearly see the gameState
   const gameState = useRecordStore((state) => state.status);
   const setGameState = useRecordStore((state) => state.setStatus);
-  useEffect(() => {
-    let newState = gameState;
-
-    if (gameState === "idle" && input.length > 0 && targetText.length > 0) {
-      // when a person types text then start running
-      newState = "running";
-    } else if (
-      gameState === "running" &&
-      targetText.length > 0 &&
-      input.length === targetText.length
-    ) {
-      // when the person is finished typing transition from running to stopping
-      newState = "stopped";
-    }
-
-    if (newState !== gameState) {
-      setGameState(newState);
-    }
-  }, [targetText, input, gameState, setGameState]);
+  useGameStateMachine(input, target);
 
   const geminiPrompt = api.geminiPrompt.generate.useQuery(
     {
@@ -59,28 +31,19 @@ function App() {
       refetchOnMount: false,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
-      enabled: !useCustomText, // Only fetch if not using PDF content directly
+      enabled: !useCustomText, // only fetch if not using PDF content directly
     },
   );
 
   // Process PDF using tRPC mutation
   const processPdf = api.pdfProcessor.process.useMutation({
     onSuccess: (data) => {
-      setIsLoading(false);
       if (data.text) {
         handlePdfProcessed(data.text);
-      } else {
-        setError("Failed to extract text from PDF");
       }
-    },
-    onError: (error) => {
-      setIsLoading(false);
-      setError(error.message);
     },
   });
 
-  //no point to a useMemo here
-  // when the reset button is pressed transition from idle to running
   const resetGame = () => {
     if (useCustomText && pdfContent) {
       // If using PDF content directly, just reset the game
@@ -96,9 +59,7 @@ function App() {
     }
   };
 
-  // no point in use Call back
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // if not stopped
     if (!(gameState == "stopped")) {
       setInput(e.target.value);
     }
@@ -108,7 +69,7 @@ function App() {
   const handlePdfProcessed = (text: string) => {
     setPdfContent(text);
     setUseCustomText(true);
-    setTargetText(text);
+    setTarget(text);
     setGameState("idle");
     setInput("");
     inputRef.current?.focus();
@@ -119,16 +80,12 @@ function App() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setIsLoading(true);
-    setError(null);
-
     try {
       const reader = new FileReader();
       reader.onload = async (event) => {
         const arrayBuffer = event.target?.result;
         if (!arrayBuffer || typeof arrayBuffer === "string") {
-          setIsLoading(false);
-          setError("Failed to read file");
+          console.log("Failed to read file");
           return;
         }
 
@@ -147,10 +104,6 @@ function App() {
       reader.readAsArrayBuffer(file);
     } catch (error) {
       console.error("Error processing PDF:", error);
-      setIsLoading(false);
-      setError(
-        error instanceof Error ? error.message : "Unknown error processing PDF",
-      );
     } finally {
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
@@ -166,16 +119,11 @@ function App() {
     if (
       !useCustomText &&
       geminiPrompt.data?.generatedText &&
-      geminiPrompt.data.generatedText != targetText
+      geminiPrompt.data.generatedText != target
     ) {
-      setTargetText(geminiPrompt.data.generatedText);
+      setTarget(geminiPrompt.data.generatedText);
     }
-  }, [
-    geminiPrompt.data?.generatedText,
-    targetText,
-    setTargetText,
-    useCustomText,
-  ]);
+  }, [geminiPrompt.data?.generatedText, target, setTarget, useCustomText]);
 
   // on page load focus on the input box
   const inputRef = useRef<HTMLInputElement>(null);
@@ -184,76 +132,28 @@ function App() {
   }, []);
 
   // // fetch all records
-  const records = api.typingEntry.getAll.useQuery();
-
-  useEffect(() => {
-    if (gameState === "stopped") {
-      records.refetch();
-    }
-  }, [gameState, records]);
+  const records = api.typingEntry.getAll.useQuery(undefined, {
+    enabled: gameState === "stopped",
+  });
 
   const isActive = (s: GameStatus) => {
     return s === "running" || s === "idle";
   };
 
-  const toggleTextSource = () => {
-    setUseCustomText(!useCustomText);
-    setPdfContent(null);
-    if (!useCustomText) {
-      setTargetText(""); // Clear target text when switching to PDF
-    } else {
-      geminiPrompt.refetch(); // Refetch gemini when switching back
-    }
-  };
-
   // Common button style
-  const buttonStyle =
-    "text-xs text-gray-300 transition-colors hover:text-gray-500 cursor-pointer mx-2";
-
   return (
     <>
       {/* The input box */}
       <div className="m-4 flex">
-        <div className="text-s mr-5 font-mono text-gray-300 transition-colors hover:text-gray-500">
-          {!session.data && (
-            <>
-              <button
-                className="text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
-                onClick={async () => {
-                  await goToSignIn();
-                }}
-              >
-                sign in
-              </button>
-            </>
-          )}
-          {session.isPending && (
-            <p className="text-xs text-gray-400">
-              Wait a while for auth to load
-            </p>
-          )}
-          {session.data && (
-            <>
-              <button
-                className="text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
-                onClick={async () => {
-                  await signOut();
-                }}
-              >
-                sign out
-              </button>
-            </>
-          )}
-        </div>
+        <AuthStatus />
         <div className="">
           <button
             className={
               "text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
             }
             onClick={triggerFileUpload}
-            disabled={isLoading}
           >
-            {isLoading ? "Loading..." : "upload pdf"}
+            upload pdf
           </button>
 
           <input
@@ -275,18 +175,12 @@ function App() {
         />
       </div>
 
-      {error && (
-        <div className="mb-2 text-center text-sm text-red-500">{error}</div>
-      )}
-
-      {useCustomText ? (
-        <div className="mb-6">
-          <PdfUpload onPdfProcessed={handlePdfProcessed} />
-        </div>
-      ) : (
+      {
         <>
           {geminiPrompt.isLoading && (
-            <p className={`mt-50 text-center text-2xl`}>
+            <p
+              className={`mt-50 text-center font-mono text-3xl text-gray-300 transition-colors`}
+            >
               AI is still loading, cut it some slack *_*
             </p>
           )}
@@ -296,11 +190,11 @@ function App() {
             </p>
           )}
         </>
-      )}
+      }
 
-      {targetText && isActive(gameState) && (
+      {target && isActive(gameState) && (
         <div>
-          <TypingArea target={targetText} input={input} inputRef={inputRef} />
+          <TypingArea target={target} input={input} inputRef={inputRef} />
         </div>
       )}
 
@@ -309,7 +203,7 @@ function App() {
           <div className="mx-130 flex flex-col justify-center">
             <button
               onClick={resetGame}
-              className={`${buttonStyle} border-1 text-center font-mono text-2xl`}
+              className={`mx-2 cursor-pointer border-1 text-center font-mono text-2xl text-xs text-gray-300 transition-colors hover:text-gray-500`}
             >
               reset
             </button>

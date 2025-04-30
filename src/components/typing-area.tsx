@@ -98,7 +98,7 @@ function TypingArea(props: TypingAreaInt) {
       </div>
       <div
         // ref={containerRef}
-        className="mx-auto my-8 max-w-5xl rounded-lg border-gray-300 p-4 focus-within:border-blue-500"
+        className="mx-auto max-w-5xl rounded-lg border-gray-300 p-4 focus-within:border-blue-500"
         onClick={() => inputRef.current?.focus()}
       >
         {/* Fixed height viewport (3 lines high) that clips content */}

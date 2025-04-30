@@ -13,7 +13,7 @@ type StatusProps = {
   mistakesInputed: number;
 };
 
-function StatusBar({
+export default function StatusBar({
   targetLength,
   inputLength,
   mistakesInputed,
@@ -126,6 +126,8 @@ function StatusBar({
         setMistakes(mistakes);
         setAccuracy(accuracy);
 
+        console.log(time, wpm, mistakes, accuracy);
+
         if (!isPending) {
           mutate({
             wpm,
@@ -163,7 +165,7 @@ function StatusBar({
   }, [gameState]);
 
   return (
-    <div className="my-6 grid grid-cols-4 gap-2 text-center text-xs text-gray-500">
+    <div className="grid grid-cols-4 gap-2 text-center text-xs text-gray-500">
       <div>
         <span ref={wpmRef}>0.00</span>
         <span className="ml-1 text-gray-400">wpm</span>
@@ -183,5 +185,3 @@ function StatusBar({
     </div>
   );
 }
-
-export default StatusBar;
