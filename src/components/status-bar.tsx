@@ -36,10 +36,11 @@ function StatusBar({
 
   const didSaveRef = useRef<boolean>(false);
 
-  let dispalyTimerRef = useRef<HTMLDivElement>(null);
-  let displayWPMRef = useRef<HTMLDivElement>(null);
-  let displayMistakesRef = useRef<HTMLDivElement>(null);
-  let displayAccuracyRef = useRef<HTMLDivElement>(null);
+  // Update refs for displaying stats
+  let wpmRef = useRef<HTMLSpanElement>(null);
+  let timeRef = useRef<HTMLSpanElement>(null);
+  let accuracyRef = useRef<HTMLSpanElement>(null);
+  let mistakesRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     currentInputLengthRef.current = inputLength;
@@ -84,18 +85,19 @@ function StatusBar({
         const formattedWpm = wpm.toFixed(2);
         const formattedAccuracy = accuracy.toFixed(2);
 
-        if (dispalyTimerRef.current) {
-          dispalyTimerRef.current.textContent = `TIME: ${formattedSeconds}`;
+        if (wpmRef.current) {
+          wpmRef.current.textContent = formattedWpm.toString();
         }
-        if (displayWPMRef.current) {
-          displayWPMRef.current.textContent = `WPM: ${formattedWpm}`;
+        if (timeRef.current) {
+          timeRef.current.textContent = formattedSeconds.toString();
         }
-        if (displayMistakesRef.current) {
-          displayMistakesRef.current.textContent = `MISTAKES: ${mistakes}`;
+        if (accuracyRef.current) {
+          accuracyRef.current.textContent = formattedAccuracy.toString();
         }
-        if (displayAccuracyRef.current) {
-          displayAccuracyRef.current.textContent = `ACCURACY: ${formattedAccuracy}`;
+        if (mistakesRef.current) {
+          mistakesRef.current.textContent = mistakes.toString();
         }
+
         rafIdRef.current = requestAnimationFrame(animate);
       };
 
@@ -142,17 +144,18 @@ function StatusBar({
       didSaveRef.current = false;
       isRunningRef.current = false;
 
-      if (dispalyTimerRef.current) {
-        dispalyTimerRef.current.textContent = `TIME: 0.00`;
+      // Reset stats display to zero
+      if (wpmRef.current) {
+        wpmRef.current.textContent = "0.00";
       }
-      if (displayWPMRef.current) {
-        displayWPMRef.current.textContent = `WPM: 0.00`;
+      if (timeRef.current) {
+        timeRef.current.textContent = "0.00";
       }
-      if (displayMistakesRef.current) {
-        displayMistakesRef.current.textContent = `MISTAKES: 0`;
+      if (accuracyRef.current) {
+        accuracyRef.current.textContent = "100";
       }
-      if (displayAccuracyRef.current) {
-        displayAccuracyRef.current.textContent = `ACCURACY: 100`;
+      if (mistakesRef.current) {
+        mistakesRef.current.textContent = "0";
       }
     }
 
@@ -160,20 +163,24 @@ function StatusBar({
   }, [gameState]);
 
   return (
-    <>
-      <div ref={dispalyTimerRef} className={`text-center ${font} text-xl`}>
-        TIME: 0.00
+    <div className="my-6 grid grid-cols-4 gap-2 text-center text-xs text-gray-500">
+      <div>
+        <span ref={wpmRef}>0.00</span>
+        <span className="ml-1 text-gray-400">wpm</span>
       </div>
-      <div ref={displayWPMRef} className={`text-center ${font} text-xl`}>
-        WPM: 0.00
+      <div>
+        <span ref={timeRef}>0.00</span>
+        <span className="ml-1 text-gray-400">s</span>
       </div>
-      <div ref={displayMistakesRef} className={`text-center ${font} text-xl`}>
-        MISTAKES: 0
+      <div>
+        <span ref={accuracyRef}>100</span>
+        <span className="ml-1 text-gray-400">%</span>
       </div>
-      <div ref={displayAccuracyRef} className={`text-center ${font} text-xl`}>
-        ACCURACY: 100
+      <div>
+        <span ref={mistakesRef}>0</span>
+        <span className="ml-1 text-gray-400">errors</span>
       </div>
-    </>
+    </div>
   );
 }
 

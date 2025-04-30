@@ -9,6 +9,7 @@ import SignIn from "./sign-in";
 import { signOut } from "@/server/auth/react-client";
 import { useSession } from "@/server/auth/react-client";
 import { useRouter } from "next/navigation";
+import RecordList from "./record-list";
 
 function App() {
   const router = useRouter();
@@ -105,16 +106,46 @@ function App() {
 
   return (
     <>
-      <div className="my-5 flex items-center justify-center opacity-0">
+      {/* The input box */}
+      <div className="flex">
+        <div>
+          {!session.data && (
+            <>
+              <button
+                className="cursor-pointer rounded-xl border bg-black px-4 py-2 text-white"
+                onClick={async () => {
+                  await goToSignIn();
+                }}
+              >
+                Sign In
+              </button>
+            </>
+          )}
+          {session.isPending && <p>Wait a while for auth to load</p>}
+          {session.data && (
+            <>
+              <button
+                className="cursor-pointer rounded-xl border bg-black px-4 py-2 text-white"
+                onClick={async () => {
+                  await signOut();
+                }}
+              >
+                Sign out
+              </button>
+            </>
+          )}
+        </div>
         <input
+          className="opacity-0"
           type="text"
           value={input}
           ref={inputRef}
           onChange={handleInput}
         />
       </div>
+
       {geminiPrompt.isLoading && (
-        <p className={`mt-50 flex justify-center text-2xl`}>
+        <p className={`mt-50 text-center text-2xl`}>
           Ai is still loading, cut it some slack *_*
         </p>
       )}
@@ -133,60 +164,16 @@ function App() {
           <div className="mx-130 flex flex-col justify-center">
             <button
               onClick={resetGame}
-              className={`flex justify-center border-1 text-center text-2xl`}
+              className={`rounded-xl border-1 text-center font-mono text-2xl`}
             >
               {" "}
-              RESET BUTTON
+              reset
             </button>
           </div>
-        </>
-      )}
-      {records.isSuccess && !records.isPending && (
-        <div>
-          <p className={`flex justify-center text-center text-xl`}> Records </p>
-          {records.isPending && <p> hey it's loading here </p>}
-          {records.isSuccess && (
-            <ul>
-              {records.data.map((r: ActualRecord) => (
-                <li
-                  key={r.id}
-                  className={`flex justify-center text-center text-xl`}
-                >
-                  WPM: {r.wpm} TIME: {r.time} MISTAKES: {r.mistakes} ACCURACY:
-                  {r.accuracy}
-                </li>
-              ))}{" "}
-            </ul>
-          )}
-        </div>
-      )}
-      {!session.data && (
-        <>
-          <div>Hello, Stranger</div>
-
-          <button
-            className="cursor-pointer rounded-xl border bg-black px-4 py-2 text-white"
-            onClick={async () => {
-              await goToSignIn();
-            }}
-          >
-            Sign In
-          </button>
-        </>
-      )}
-      {session.isPending && <p>Wait a while for auth to load</p>}
-      {session.data && (
-        <>
-          <div>Hello, {session.data?.user.name}</div>
-
-          <button
-            className="cursor-pointer rounded-xl border bg-black px-4 py-2 text-white"
-            onClick={async () => {
-              await signOut();
-            }}
-          >
-            Sign out
-          </button>
+          <RecordList
+            records={records.data ?? []}
+            isLoading={records.isPending}
+          />
         </>
       )}
     </>

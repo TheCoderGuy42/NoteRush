@@ -89,15 +89,22 @@ function TypingArea(props: TypingAreaInt) {
 
   return (
     <>
+      <div className="mx-auto max-w-md">
+        <StatusBar
+          targetLength={target.length}
+          inputLength={input.length}
+          mistakesInputed={mistakes}
+        />
+      </div>
       <div
         // ref={containerRef}
-        className="mx-auto my-8 max-w-3xl rounded-lg border-2 border-gray-300 p-4 focus-within:border-blue-500"
+        className="mx-auto my-8 max-w-5xl rounded-lg border-2 border-gray-300 p-4 focus-within:border-blue-500"
         onClick={() => inputRef.current?.focus()}
       >
         {/* Fixed height viewport (3 lines high) that clips content */}
         <div
           className="overflow-hidden text-left font-mono text-2xl leading-normal"
-          style={{ height: `calc(3 * 1.5em)` }}
+          style={{ height: `calc(5 * 1.5em)` }}
         >
           {/* Inner container that holds all text and gets translated */}
           <div
@@ -114,11 +121,6 @@ function TypingArea(props: TypingAreaInt) {
           </div>
         </div>
       </div>
-      <StatusBar
-        targetLength={target.length}
-        inputLength={input.length}
-        mistakesInputed={mistakes}
-      />
     </>
   );
 }
