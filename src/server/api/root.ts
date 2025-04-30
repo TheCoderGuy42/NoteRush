@@ -1,6 +1,7 @@
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { typingEntry } from "./routers/typing-entry";
 import { geminiPrompt } from "./routers/gemini-prompt";
+import { pdfProcessor } from "./routers/pdf-processor";
 
 /**
  * This is the primary router for your server.
@@ -10,6 +11,7 @@ import { geminiPrompt } from "./routers/gemini-prompt";
 export const appRouter = createTRPCRouter({
   typingEntry: typingEntry,
   geminiPrompt: geminiPrompt,
+  pdfProcessor: pdfProcessor,
 });
 
 // export type definition of API
