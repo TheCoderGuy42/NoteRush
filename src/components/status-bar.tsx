@@ -58,6 +58,8 @@ export default function StatusBar({
 
   const utils = api.useUtils();
 
+  console.log("it should get here");
+
   const { mutate, isPending } = api.typingEntry.add.useMutation({
     onSuccess: (data) => {
       utils.typingEntry.getAll.invalidate();
@@ -127,6 +129,7 @@ export default function StatusBar({
         setAccuracy(accuracy);
 
         console.log(time, wpm, mistakes, accuracy);
+        console.log("it should defo here");
 
         if (!isPending) {
           mutate({

@@ -21,6 +21,7 @@ function App() {
   const gameState = useRecordStore((state) => state.status);
   const setGameState = useRecordStore((state) => state.setStatus);
   useGameStateMachine(input, target);
+  console.log("gamestate" + gameState);
 
   const geminiPrompt = api.geminiPrompt.generate.useQuery(
     {
@@ -192,8 +193,8 @@ function App() {
         </>
       }
 
-      {target && isActive(gameState) && (
-        <div>
+      {target && (
+        <div className={isActive(gameState) ? "" : "hidden"}>
           <TypingArea target={target} input={input} inputRef={inputRef} />
         </div>
       )}
