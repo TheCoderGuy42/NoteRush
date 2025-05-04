@@ -52,7 +52,7 @@ export default function PdfDrawer({ selectPdf }: PdfDrawerProps) {
 
             {pdfsQuery.data && pdfsQuery.data.length > 0 && (
               <ul className="space-y-3">
-                {pdfsQuery.data.map(({ paragraphs, id }) => (
+                {pdfsQuery.data.map(({ paragraphs, id, title }) => (
                   <li
                     key={id}
                     className={clsx(
@@ -70,7 +70,7 @@ export default function PdfDrawer({ selectPdf }: PdfDrawerProps) {
                     }}
                   >
                     <div className="mb-1 flex justify-between font-medium">
-                      <span>PDF ID {id}</span>
+                      <span>{title ? title : "No title"}</span>
                       <span className="text-xs text-zinc-500 dark:text-zinc-400">
                         ({paragraphs.length} paras)
                       </span>

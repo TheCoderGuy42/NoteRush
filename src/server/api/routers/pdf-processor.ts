@@ -58,6 +58,7 @@ export const pdfProcessor = createTRPCRouter({
               })),
             },
           },
+          title: input.filename,
         },
       });
       return newPdf;

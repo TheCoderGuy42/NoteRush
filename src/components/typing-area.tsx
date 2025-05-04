@@ -93,35 +93,37 @@ function TypingArea(props: TypingAreaInt) {
 
   return (
     <>
-      <div
-        // ref={containerRef}
-        className="mx-auto mt-50 max-w-6xl rounded-lg border-gray-300 p-4 focus-within:border-blue-500"
-      >
-        {/* Fixed height viewport (3 lines high) that clips content */}
+      <div className="mt-50">
+        <StatusBar
+          targetLength={target.length}
+          inputLength={input.length}
+          mistakesInputed={mistakes}
+        />
         <div
-          className="overflow-hidden text-left font-mono text-4xl leading-normal"
-          style={{ height: `calc(5 * 1.5em)` }}
+          // ref={containerRef}
+          className="mx-auto max-w-6xl rounded-lg border-gray-300 p-4 focus-within:border-blue-500"
         >
-          {/* Inner container that holds all text and gets translated */}
+          {/* Fixed height viewport (3 lines high) that clips content */}
           <div
-            ref={textContainerRef}
-            style={{
-              // Apply the calculated vertical offset
-              transform: `translateY(${scrollOffset}px)`,
-              transition: "transform 0.1s linear", // Faster, linear might feel more responsive
-              whiteSpace: "pre-wrap", // Handles spaces and line breaks
-              wordBreak: "break-word", // Breaks long words if needed
-            }}
+            className="overflow-hidden text-left font-mono text-4xl leading-normal"
+            style={{ height: `calc(5 * 1.5em)` }}
           >
-            {display}
+            {/* Inner container that holds all text and gets translated */}
+            <div
+              ref={textContainerRef}
+              style={{
+                // Apply the calculated vertical offset
+                transform: `translateY(${scrollOffset}px)`,
+                transition: "transform 0.1s linear", // Faster, linear might feel more responsive
+                whiteSpace: "pre-wrap", // Handles spaces and line breaks
+                wordBreak: "break-word", // Breaks long words if needed
+              }}
+            >
+              {display}
+            </div>
           </div>
         </div>
       </div>
-      <StatusBar
-        targetLength={target.length}
-        inputLength={input.length}
-        mistakesInputed={mistakes}
-      />
     </>
   );
 }

@@ -10,6 +10,7 @@ import useGameStateMachine from "./use-game-state-machine";
 import toast, { Toaster } from "react-hot-toast";
 import { P } from "node_modules/better-auth/dist/shared/better-auth.qzSbzJNO";
 import PdfDrawer from "./sidebar/drawer";
+import { useSession } from "@/server/auth/react-client";
 
 const data = {
   paragraphsnow: [
@@ -134,8 +135,9 @@ function App() {
   function getRandomInt(max: number) {
     return Math.floor(Math.random() * max);
   }
-  const utils = api.useUtils(); // 1. Get tRPC utils
+  const session = useSession();
 
+  const utils = api.useUtils();
   const { mutate: addPdf, isPending: isAddingPdf } =
     api.pdfProcessor.add.useMutation({
       onSuccess: (data) => {
@@ -288,15 +290,19 @@ function App() {
       {/* nav bar */}
       <div className="m-4 flex">
         <AuthStatus />
-        <button
-          className={
-            "text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
-          }
-          onClick={triggerFileUpload}
-        >
-          upload pdf
-        </button>
-        <PdfDrawer selectPdf={selectPdf} />
+        {session.data && (
+          <>
+            <button
+              className={
+                "text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
+              }
+              onClick={triggerFileUpload}
+            >
+              upload pdf
+            </button>
+            <PdfDrawer selectPdf={selectPdf} />
+          </>
+        )}
 
         <input
           ref={fileInputRef}

@@ -28,6 +28,7 @@ model Pdf {
   paragraphs Paragraph[]
   User       User        @relation(fields: [userId], references: [id])
   userId     String
+  title      String      @default("")
 }
 
 model Paragraph {
