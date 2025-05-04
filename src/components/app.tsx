@@ -134,7 +134,23 @@ function App() {
   function getRandomInt(max: number) {
     return Math.floor(Math.random() * max);
   }
-  const { mutate: addPdf, isPending } = api.pdfProcessor.add.useMutation();
+  const utils = api.useUtils(); // 1. Get tRPC utils
+
+  const { mutate: addPdf, isPending: isAddingPdf } =
+    api.pdfProcessor.add.useMutation({
+      onSuccess: (data) => {
+        console.log("Successfully added PDF:", data);
+        toast.success("PDF uploaded successfully!");
+        utils.pdfProcessor.get.invalidate();
+      },
+      onError: (error) => {
+        console.error("Error adding PDF:", error);
+        toast.error(`Failed to upload PDF: ${error.message}`);
+      },
+      onSettled: () => {
+        toast.dismiss("pdf-upload");
+      },
+    });
 
   const [input, setInput] = useState("");
   const [target, setTarget] = useState("");
@@ -142,7 +158,33 @@ function App() {
     getRandomInt(data.database.length),
   );
 
-  const [isPdfContent, setPdfContent] = useState(false);
+  const [selectedPdf, setSelectedPdf] = useState<number | null>(null);
+  const pdfsQuery = api.pdfProcessor.get.useQuery();
+
+  const selectPdf = (pdfId: number) => {
+    setSelectedPdf(pdfId);
+    if (pdfsQuery.data) {
+      console.log(pdfsQuery.data.find((pdf) => pdf.id === pdfId));
+    }
+  };
+
+  const get_rand_para = () => {
+    if (!pdfsQuery.data) return;
+    const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
+    if (!pdf) return;
+    const rand_para_id = getRandomInt(pdf.paragraphs.length);
+    const rand_para = pdf.paragraphs[rand_para_id];
+  };
+
+  useEffect(() => {
+    if (!pdfsQuery.data) return;
+    const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
+    if (!pdf) return;
+    const rand_para_id = getRandomInt(pdf.paragraphs.length);
+    const rand_para = pdf.paragraphs[rand_para_id];
+    if (!rand_para) return;
+    setTarget(rand_para.text);
+  }, [pdfsQuery.data, selectedPdf]);
 
   // gameState would need input and target, I like it being in app as you can clearly see the gameState
   const gameState = useRecordStore((state) => state.status);
@@ -153,12 +195,21 @@ function App() {
 
   const resetGame = () => {
     // If using PDF content directly, just reset the game
-    console.log("[DEBUG] resetGame()");
     setGameState("idle");
     setInput("");
     setTarget("");
     inputRef.current?.focus();
-    setBoilerplate((num) => getRandomInt(data.database.length));
+    if (!selectedPdf) {
+      setBoilerplate((num) => getRandomInt(data.database.length));
+    } else {
+      if (!pdfsQuery.data) return;
+      const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
+      if (!pdf) return;
+      const rand_para_id = getRandomInt(pdf.paragraphs.length);
+      const rand_para = pdf.paragraphs[rand_para_id];
+      if (!rand_para) return;
+      setTarget(rand_para.text);
+    }
   };
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -191,7 +242,6 @@ function App() {
       if (!uri.startsWith("data:application/pdf;base64,")) {
         toast.error("Needs to be a pdf (internal error should not get here)");
       }
-      toast("testing a toast");
       const data = uri.slice("data:application/pdf;base64,".length);
 
       addPdf({
@@ -246,8 +296,7 @@ function App() {
         >
           upload pdf
         </button>
-
-        <PdfDrawer />
+        <PdfDrawer selectPdf={selectPdf} />
 
         <input
           ref={fileInputRef}
@@ -255,7 +304,6 @@ function App() {
           accept=".pdf"
           onChange={handleFileChange}
           className="hidden"
-          aria-hidden="true"
         />
         <input
           className="opacity-0"

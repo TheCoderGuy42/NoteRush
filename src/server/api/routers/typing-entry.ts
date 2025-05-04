@@ -34,7 +34,6 @@ export const typingEntry = createTRPCRouter({
 
   getAll: publicProcedure.input(z.void()).query(async ({ ctx }) => {
     const userId = ctx.session?.user.id;
-    console.log("Current user id", userId);
     return await ctx.db.typingEntry.findMany({
       where: {
         userId: userId,

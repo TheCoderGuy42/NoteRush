@@ -36,7 +36,7 @@ export default function StatusBar({
 
   const didSaveRef = useRef<boolean>(false);
 
-  // Update refs for displaying stats
+  // stat refs
   let wpmRef = useRef<HTMLSpanElement>(null);
   let timeRef = useRef<HTMLSpanElement>(null);
   let accuracyRef = useRef<HTMLSpanElement>(null);
@@ -125,9 +125,6 @@ export default function StatusBar({
         setWPM(wpm); // an extra frame is done so this needs to be added
         setMistakes(mistakes);
         setAccuracy(accuracy);
-
-        console.log(time, wpm, mistakes, accuracy);
-        console.log("it should defo here");
 
         mutate({
           wpm,

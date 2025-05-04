@@ -6,10 +6,9 @@ import {
 } from "@/server/api/trpc";
 import * as fs from "fs";
 import * as path from "path";
-import pdfparse from "pdf-parse";
 import { TRPCError } from "@trpc/server";
 import { aiService } from "./gemini-prompt";
-
+import pdfparse from "pdf-parse";
 // Import pdf-parse dynamically to avoid the initialization error
 
 export const pdfProcessor = createTRPCRouter({
@@ -21,7 +20,6 @@ export const pdfProcessor = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      console.log("1. Gets to the mutation");
       const userId = ctx.session?.user.id;
 
       if (!userId) {

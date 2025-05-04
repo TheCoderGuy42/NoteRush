@@ -59,7 +59,12 @@ function TypingArea(props: TypingAreaInt) {
   const { output: display, mistakes } = useRenderer(target, input);
 
   useEffect(() => {
-    if (!textContainerRef.current) return;
+    if (input === "" || !textContainerRef.current) {
+      if (scrollOffset !== 0) {
+        setScrollOffset(0);
+      }
+      return;
+    }
 
     const cursorEl = document.getElementById("cursor");
     if (!cursorEl) return;
@@ -84,7 +89,7 @@ function TypingArea(props: TypingAreaInt) {
     if (desiredOffset !== scrollOffset) {
       setScrollOffset(desiredOffset);
     }
-  }, [input, scrollOffset]);
+  }, [input, target, scrollOffset]);
 
   return (
     <>
