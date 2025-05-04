@@ -9,6 +9,7 @@ import AuthStatus from "./auth-status";
 import useGameStateMachine from "./use-game-state-machine";
 import toast, { Toaster } from "react-hot-toast";
 import { P } from "node_modules/better-auth/dist/shared/better-auth.qzSbzJNO";
+import PdfDrawer from "./sidebar/drawer";
 
 const data = {
   paragraphsnow: [
@@ -134,21 +135,6 @@ function App() {
     return Math.floor(Math.random() * max);
   }
   const { mutate: addPdf, isPending } = api.pdfProcessor.add.useMutation();
-  const pdfs = api.pdfProcessor.get.useQuery();
-
-  useEffect(() => {
-    // Check if data exists before logging
-    if (pdfs.data) {
-      console.log("PDFs Data Updated:", pdfs.data);
-
-      // You could also use console.table if the data is an array of objects with similar keys
-      // console.table(pdfs.data);
-    } else if (pdfs.isLoading) {
-      console.log("Loading PDFs...");
-    } else if (pdfs.error) {
-      console.error("Error fetching PDFs:", pdfs.error);
-    }
-  }, [pdfs.data, pdfs.isLoading, pdfs.error]);
 
   const [input, setInput] = useState("");
   const [target, setTarget] = useState("");
@@ -252,26 +238,25 @@ function App() {
       {/* nav bar */}
       <div className="m-4 flex">
         <AuthStatus />
-        <div className="">
-          <button
-            className={
-              "text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
-            }
-            onClick={triggerFileUpload}
-          >
-            upload pdf
-          </button>
+        <button
+          className={
+            "text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
+          }
+          onClick={triggerFileUpload}
+        >
+          upload pdf
+        </button>
 
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf"
-            onChange={handleFileChange}
-            className="hidden"
-            aria-hidden="true"
-          />
-        </div>
+        <PdfDrawer />
 
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf"
+          onChange={handleFileChange}
+          className="hidden"
+          aria-hidden="true"
+        />
         <input
           className="opacity-0"
           type="text"
@@ -281,18 +266,6 @@ function App() {
         />
       </div>
 
-      {pdfs.data && (
-        <div>
-          {pdfs.data.map(({ paragraphs, id }) => (
-            <li key={id} className="m-2 text-sm text-gray-600">
-              start of a pdf
-              {paragraphs.map((para) => (
-                <ul className="p-2"> start of a para {para.text}</ul>
-              ))}
-            </li>
-          ))}
-        </div>
-      )}
       {target && (
         <div className={isActive(gameState) ? "" : "hidden"} onClick={focus}>
           <TypingArea target={target} input={input} />
