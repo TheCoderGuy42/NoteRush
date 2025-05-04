@@ -58,8 +58,6 @@ export default function StatusBar({
 
   const utils = api.useUtils();
 
-  console.log("it should get here");
-
   const { mutate, isPending } = api.typingEntry.add.useMutation({
     onSuccess: (data) => {
       utils.typingEntry.getAll.invalidate();
@@ -131,14 +129,12 @@ export default function StatusBar({
         console.log(time, wpm, mistakes, accuracy);
         console.log("it should defo here");
 
-        if (!isPending) {
-          mutate({
-            wpm,
-            time,
-            mistakes,
-            accuracy,
-          });
-        }
+        mutate({
+          wpm,
+          time,
+          mistakes,
+          accuracy,
+        });
 
         rafIdRef.current = null;
         didSaveRef.current = true;
@@ -168,7 +164,7 @@ export default function StatusBar({
   }, [gameState]);
 
   return (
-    <div className="grid grid-cols-4 gap-2 text-center text-xs text-gray-500">
+    <div className="mx-auto grid max-w-md grid-cols-4 gap-2 text-center text-xs text-gray-500">
       <div>
         <span ref={wpmRef}>0.00</span>
         <span className="ml-1 text-gray-400">wpm</span>

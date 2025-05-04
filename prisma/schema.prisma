@@ -23,6 +23,20 @@ model TypingEntry {
   userId    String
 }
 
+model Pdf {
+  id         Int         @id @default(autoincrement())
+  paragraphs Paragraph[]
+  User       User        @relation(fields: [userId], references: [id])
+  userId     String
+}
+
+model Paragraph {
+  id    Int    @id @default(autoincrement())
+  text  String
+  Pdf   Pdf    @relation(fields: [pdfId], references: [id])
+  pdfId Int
+}
+
 model User {
   id            String        @id
   name          String
@@ -34,6 +48,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   TypingEntry   TypingEntry[]
+  Pdfs          Pdf[]
 
   @@unique([email])
   @@map("user")

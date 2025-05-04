@@ -6,7 +6,6 @@ import StatusBar from "./status-bar";
 interface TypingAreaInt {
   target: string;
   input: string;
-  inputRef: React.RefObject<HTMLInputElement | null>;
 }
 
 function useRenderer(
@@ -52,7 +51,7 @@ function useRenderer(
 }
 
 function TypingArea(props: TypingAreaInt) {
-  const { target, input, inputRef } = props;
+  const { target, input } = props;
   const textContainerRef = useRef<HTMLDivElement>(null); // scrollable text
 
   const [scrollOffset, setScrollOffset] = useState(0);
@@ -89,21 +88,13 @@ function TypingArea(props: TypingAreaInt) {
 
   return (
     <>
-      <div className="mx-auto max-w-md">
-        <StatusBar
-          targetLength={target.length}
-          inputLength={input.length}
-          mistakesInputed={mistakes}
-        />
-      </div>
       <div
         // ref={containerRef}
-        className="mx-auto max-w-5xl rounded-lg border-gray-300 p-4 focus-within:border-blue-500"
-        onClick={() => inputRef.current?.focus()}
+        className="mx-auto mt-50 max-w-6xl rounded-lg border-gray-300 p-4 focus-within:border-blue-500"
       >
         {/* Fixed height viewport (3 lines high) that clips content */}
         <div
-          className="overflow-hidden text-left font-mono text-2xl leading-normal"
+          className="overflow-hidden text-left font-mono text-4xl leading-normal"
           style={{ height: `calc(5 * 1.5em)` }}
         >
           {/* Inner container that holds all text and gets translated */}
@@ -121,6 +112,11 @@ function TypingArea(props: TypingAreaInt) {
           </div>
         </div>
       </div>
+      <StatusBar
+        targetLength={target.length}
+        inputLength={input.length}
+        mistakesInputed={mistakes}
+      />
     </>
   );
 }

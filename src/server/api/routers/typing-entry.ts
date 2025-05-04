@@ -18,7 +18,7 @@ export const typingEntry = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      if (!userId) return;
+
       const newEntry = await ctx.db.typingEntry.create({
         data: {
           accuracy: input.accuracy,
@@ -34,9 +34,10 @@ export const typingEntry = createTRPCRouter({
 
   getAll: publicProcedure.input(z.void()).query(async ({ ctx }) => {
     const userId = ctx.session?.user.id;
+    console.log("Current user id", userId);
     return await ctx.db.typingEntry.findMany({
       where: {
-        userId: userId, // Filter results by the logged-in user's ID
+        userId: userId,
       },
     });
   }),
