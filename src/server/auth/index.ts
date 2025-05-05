@@ -30,10 +30,11 @@ export const auth = betterAuth({
         enabled: true,
         plans: [
           {
-            // Example plan - match this with your Stripe Product/Price
-            name: "pro", // This is the identifier you'll use in the client
+            name: "pro",
+            // IMPORTANT: Replace this with your ACTUAL price ID from your Stripe test environment
+            // Go to Stripe Dashboard > Test Mode > Products > Pro Tier > Click on the $4.00/month price
+            // Copy the Price ID (starts with price_)
             priceId: "price_1RLDArGpwwIGDewkBOBDickP",
-            // Optional: Add limits, annual price, trial info etc.
             limits: { pdfUploads: 50 },
           },
         ],

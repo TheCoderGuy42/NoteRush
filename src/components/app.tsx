@@ -10,7 +10,7 @@ import useGameStateMachine from "./use-game-state-machine";
 import toast, { Toaster } from "react-hot-toast";
 import { P } from "node_modules/better-auth/dist/shared/better-auth.qzSbzJNO";
 import PdfDrawer from "./sidebar/drawer";
-import { useSession } from "@/server/auth/react-client";
+import { useSession, authClient } from "@/server/auth/react-client";
 
 const data = {
   paragraphsnow: [
@@ -281,6 +281,29 @@ function App() {
     return s === "running" || s === "idle";
   };
 
+  // Add subscription handling function
+  const handleSubscribeClick = async () => {
+    const successUrl = `${window.location.origin}/dashboard?subscribed=true`;
+    const cancelUrl = `${window.location.origin}`;
+
+    try {
+      const { error } = await authClient.subscription.upgrade({
+        plan: "pro", // Using the pro plan we defined
+        successUrl,
+        cancelUrl,
+      });
+
+      if (error) {
+        console.error("Subscription failed:", error.message);
+        toast.error(`Subscription failed: ${error.message}`);
+      }
+      // If successful, user will be redirected to Stripe
+    } catch (err) {
+      console.error("Subscription error:", err);
+      toast.error("Failed to start subscription process");
+    }
+  };
+
   // Common button style
   return (
     <>
@@ -301,6 +324,14 @@ function App() {
               upload pdf
             </button>
             <PdfDrawer selectPdf={selectPdf} />
+
+            {/* Add subscription button */}
+            <button
+              className="text-s ml-4 font-mono text-gray-300 transition-colors hover:text-gray-500"
+              onClick={handleSubscribeClick}
+            >
+              go pro
+            </button>
           </>
         )}
 
