@@ -103,20 +103,17 @@ function TypingArea(props: TypingAreaInt) {
           // ref={containerRef}
           className="mx-auto max-w-6xl rounded-lg border-gray-300 p-4 focus-within:border-blue-500"
         >
-          {/* Fixed height viewport (3 lines high) that clips content */}
           <div
             className="overflow-hidden text-left font-mono text-4xl leading-normal"
-            style={{ height: `calc(5 * 1.5em)` }}
+            style={{ height: `calc(3 * 1.5em)` }}
           >
-            {/* Inner container that holds all text and gets translated */}
             <div
               ref={textContainerRef}
               style={{
-                // Apply the calculated vertical offset
                 transform: `translateY(${scrollOffset}px)`,
-                transition: "transform 0.1s linear", // Faster, linear might feel more responsive
-                whiteSpace: "pre-wrap", // Handles spaces and line breaks
-                wordBreak: "break-word", // Breaks long words if needed
+                transition: "transform 0.1s linear", // faster, linear might feel more responsive
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
               }}
             >
               {display}
