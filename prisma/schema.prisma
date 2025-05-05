@@ -50,6 +50,7 @@ model User {
   accounts      Account[]
   TypingEntry   TypingEntry[]
   Pdfs          Pdf[]
+  stripeCustomerId String?       @map("stripeCustomerId")
 
   @@unique([email])
   @@map("user")
@@ -98,4 +99,21 @@ model Verification {
   updatedAt  DateTime?
 
   @@map("verification")
+}
+
+model Subscription {
+  id                   String    @id
+  plan                 String
+  referenceId          String
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  status               String
+  periodStart          DateTime?
+  periodEnd            DateTime?
+  cancelAtPeriodEnd    Boolean?
+  seats                Int?
+  trialStart           DateTime?
+  trialEnd             DateTime?
+
+  @@map("subscription")
 }
