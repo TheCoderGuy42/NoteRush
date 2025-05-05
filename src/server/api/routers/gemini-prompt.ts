@@ -7,6 +7,8 @@ import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 
 import { TRPCError } from "@trpc/server";
 
+import { env } from "@/env";
+
 const prompt = `Okay, here is the prompt with the asterisks removed for easier copying and pasting. I've replaced bullet points previously marked with asterisks with hyphens (-) for list clarity.
 
 You are an AI assistant tasked with preparing text excerpts for a typing racer game. The text comes from user-uploaded documents, likely personal notes, articles, or informational PDFs. The goal is to extract paragraphs that are both suitable for typing practice and rich in information content.
@@ -49,7 +51,7 @@ Process the provided document text now according to these instructions.
 `;
 
 const ai = new GoogleGenAI({
-  apiKey: "AIzaSyD-ays22lTA5268eKtCFg_1cgs_dwsTnRk",
+  apiKey: process.env.GEMINI_API,
 });
 
 const paragraphListSchema: Schema = {

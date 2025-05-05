@@ -29,6 +29,19 @@ export const pdfProcessor = createTRPCRouter({
         });
       }
 
+      const userPdfCount = await ctx.db.pdf.count({
+        where: {
+          userId: userId, // Filter by the current user
+        },
+      });
+
+      if (userPdfCount > 5) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Max 5 PDF's",
+        });
+      }
+
       const pdfBinary = Buffer.from(input.pdfBase64, "base64");
       const pdfData = await pdfparse(pdfBinary);
 
