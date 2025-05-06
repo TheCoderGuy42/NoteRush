@@ -44,14 +44,23 @@ Example of desired output format:
 Process the provided document text now according to these instructions.
 `;
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API,
-});
+// Fallback content in case Gemini API fails
+const fallbackParagraphs = [
+  "this is a fallback paragraph from the system since the ai processing failed please try again with a different pdf or contact support if this issue persists",
+  "we apologize for the inconvenience our system is currently experiencing difficulties processing your document try uploading a simpler pdf with clear text content",
+];
+
+// Initialize the GoogleGenAI client only if API key is available
+const ai = process.env.GEMINI_API
+  ? new GoogleGenAI({
+      apiKey: process.env.GEMINI_API,
+    })
+  : null;
 
 const paragraphListSchema: Schema = {
-  type: Type.ARRAY, // Use Type.ARRAY instead of "array"
+  type: Type.ARRAY,
   items: {
-    type: Type.STRING, // Use Type.STRING instead of "string"
+    type: Type.STRING,
   },
 };
 
@@ -59,39 +68,62 @@ export const aiService = {
   generateContent: async (pdfText: string) => {
     if (pdfText.length > 200000) {
       throw new TRPCError({
-        code: "BAD_REQUEST", // It's bad input if you don't accept empty PDFs
+        code: "BAD_REQUEST",
         message: `The PDF file is too long`,
       });
     }
 
-    const contents = prompt + pdfText;
-
-    // For normal operation (not PDF content), use static text or uncomment the Gemini API call
-    const result = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: contents,
-      config: {
-        responseSchema: paragraphListSchema,
-        responseMimeType: "application/json",
-      },
-    });
-
-    if (!result.text) return;
-
-    const parsed_result = JSON.parse(result.text) as string[];
-
-    if (
-      !Array.isArray(parsed_result) ||
-      !parsed_result.every((item) => typeof item === "string")
-    ) {
-      console.error("Parsed data is not an array of strings:", parsed_result);
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "AI response format mismatch (expected string array).",
-      });
+    // Check if Gemini API is configured
+    if (!ai || !process.env.GEMINI_API) {
+      console.warn("Gemini API key not found, using fallback content");
+      return fallbackParagraphs;
     }
 
-    // Using static text as a placeholder
-    return parsed_result;
+    try {
+      const contents = prompt + pdfText;
+
+      const result = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: contents,
+        config: {
+          responseSchema: paragraphListSchema,
+          responseMimeType: "application/json",
+        },
+      });
+
+      if (!result.text) {
+        console.warn("Empty response from Gemini API");
+        return fallbackParagraphs;
+      }
+
+      try {
+        const parsed_result = JSON.parse(result.text) as string[];
+
+        if (
+          !Array.isArray(parsed_result) ||
+          !parsed_result.every((item) => typeof item === "string") ||
+          parsed_result.length === 0
+        ) {
+          console.error(
+            "Invalid response format from Gemini API:",
+            parsed_result,
+          );
+          return fallbackParagraphs;
+        }
+
+        return parsed_result;
+      } catch (parseError) {
+        console.error(
+          "Error parsing Gemini API response:",
+          parseError,
+          "Raw response:",
+          result.text,
+        );
+        return fallbackParagraphs;
+      }
+    } catch (error) {
+      console.error("Error calling Gemini API:", error);
+      return fallbackParagraphs;
+    }
   },
 };

@@ -275,24 +275,49 @@ function App() {
 
   // Add subscription handling function
   const handleSubscribeClick = async () => {
-    const successUrl = `${window.location.origin}/dashboard?subscribed=true`;
-    const cancelUrl = `${window.location.origin}`;
-
     try {
-      const { error } = await authClient.subscription.upgrade({
+      toast.loading("Preparing subscription...", { id: "subscription" });
+
+      // Get the absolute URLs for success and cancel
+      const baseUrl = window.location.origin;
+      const successUrl = `${baseUrl}/dashboard?subscribed=true`;
+      const cancelUrl = `${baseUrl}`;
+
+      console.log("Initiating subscription upgrade with:", {
+        plan: "pro",
+        successUrl,
+        cancelUrl,
+      });
+
+      const result = await authClient.subscription.upgrade({
         plan: "pro", // Using the pro plan we defined
         successUrl,
         cancelUrl,
       });
 
-      if (error) {
-        console.error("Subscription failed:", error.message);
-        toast.error(`Subscription failed: ${error.message}`);
+      console.log("Subscription upgrade response:", result);
+
+      if (result.error) {
+        console.error("Subscription failed:", result.error);
+        toast.error(
+          `Subscription failed: ${result.error.message || "Unknown error"}`,
+          {
+            id: "subscription",
+          },
+        );
+        return;
       }
+
+      toast.success("Redirecting to payment...", { id: "subscription" });
       // If successful, user will be redirected to Stripe
     } catch (err) {
       console.error("Subscription error:", err);
-      toast.error("Failed to start subscription process");
+      toast.error(
+        `Subscription error: ${err instanceof Error ? err.message : "Unknown error"}`,
+        {
+          id: "subscription",
+        },
+      );
     }
   };
 
