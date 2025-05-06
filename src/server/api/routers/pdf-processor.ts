@@ -5,6 +5,8 @@ import { aiService } from "./gemini-prompt";
 import * as fs from "fs";
 import * as path from "path";
 
+import pdf from "pdf-parse/lib/pdf-parse.js";
+
 import pdf_parse from "pdf-parse";
 
 // Import pdf-parse dynamically to avoid the initialization error
@@ -50,7 +52,7 @@ export const pdfProcessor = createTRPCRouter({
         try {
           const pdfBinary = Buffer.from(input.pdfBase64, "base64");
           // Get the pdf-parse module dynamically
-          pdfData = await pdf_parse(pdfBinary);
+          pdfData = await pdf(pdfBinary);
         } catch (error) {
           console.error("PDF parsing error:", error);
           throw new TRPCError({
