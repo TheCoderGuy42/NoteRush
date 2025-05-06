@@ -34,6 +34,8 @@ Instructions:
 6.  Filter by Length: Ensure the final cleaned paragraphs are of a reasonable length for typing, for example, between 20 and 50 words. [Adjust this range based on your game's needs].
 7.  Format Output: Return a list of the cleaned, information-dense paragraphs that meet all criteria. Format the output as a JSON list of strings. Provide [Specify Number, e.g., 'up to 15' or 'all suitable'] paragraphs.
 
+This step is crucial - Normalize internal whitespace to single spaces between words.
+
 Example of desired output format:
 [
   "This first paragraph explains a key scientific concept in detail, making it information-dense and suitable for typing practice after cleaning.",
