@@ -38,45 +38,9 @@ export const auth = betterAuth({
           },
         ],
       },
-      onCustomerCreate: async ({ customer, stripeCustomer, user }, request) => {
+      onCustomerCreate: async ({ customer, user }) => {
         console.log(`Customer ${customer.id} created for user ${user.id}`);
       },
     }),
   ],
 });
-/*// src/server/auth/index.ts (inside betterAuth config)
-import { betterAuth } from "better-auth";
-import { stripe } from "@better-auth/stripe";
-import Stripe from "stripe";
-// ... other imports
-
-const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-02-24.acacia", // Use the API version from the docs or your Stripe dashboard
-});
-
-export const auth = betterAuth({
-  // ... your existing base config (adapter, etc.)
-  plugins: [
-    stripe({
-      stripeClient,
-      stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
-      createCustomerOnSignUp: true, // Or false, depending on your needs
-      // ---> Add your subscription configuration here <---
-      subscription: {
-        enabled: true, // IMPORTANT: Enable subscription features
-        plans: [
-          {
-            // Example plan - match this with your Stripe Product/Price
-            name: "pro", // This is the identifier you'll use in the client
-            priceId: "price_1RLDArGpwwIGDewkBOBDickP", 
-            // Optional: Add limits, annual price, trial info etc.
-            // limits: { pdfUploads: 50 },
-          },
-          // Add more plans if needed
-        ],
-      },
-    }),
-  ],
-});
-
-export type Auth = typeof auth; */

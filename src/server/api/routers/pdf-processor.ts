@@ -71,7 +71,7 @@ export const pdfProcessor = createTRPCRouter({
       return newPdf;
     }),
 
-  get: protectedProcedure.input(z.void()).query(async ({ input, ctx }) => {
+  get: protectedProcedure.input(z.void()).query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
 
     return await ctx.db.pdf.findMany({

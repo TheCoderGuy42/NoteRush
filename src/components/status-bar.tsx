@@ -56,7 +56,7 @@ export default function StatusBar({
   const utils = api.useUtils();
 
   const { mutate } = api.typingEntry.add.useMutation({
-    onSuccess: (data) => {
+    onSuccess: () => {
       utils.typingEntry.getAll.invalidate();
     },
   });
@@ -154,7 +154,7 @@ export default function StatusBar({
     }
 
     // ideally no return, as when you complete the game it immediately needs to swap to another screen, so it doesn't capture the last input
-  }, [gameState]);
+  }, [gameState, mutate, setTime, setAccuracy, setMistakes, setWPM]);
 
   return (
     <div className="mx-auto grid max-w-md grid-cols-4 gap-2 text-center text-xs text-gray-500">

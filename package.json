@@ -51,6 +51,7 @@
     "react-dom": "^19.0.0",
     "react-dropzone": "^14.3.8",
     "react-hot-toast": "^2.5.2",
+    "react-scan": "^0.3.3",
     "server-only": "^0.0.1",
     "stripe": "^17.7.0",
     "superjson": "^2.2.1",
