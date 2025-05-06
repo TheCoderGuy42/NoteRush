@@ -57,7 +57,7 @@ export default function StatusBar({
 
   const { mutate } = api.typingEntry.add.useMutation({
     onSuccess: () => {
-      utils.typingEntry.getAll.invalidate();
+      void utils.typingEntry.getAll.invalidate();
     },
   });
 
