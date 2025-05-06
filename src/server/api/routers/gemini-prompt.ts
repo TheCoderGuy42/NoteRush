@@ -78,7 +78,7 @@ export const aiService = {
 
     if (!result.text) return;
 
-    const parsed_result: string[] = JSON.parse(result.text);
+    const parsed_result = JSON.parse(result.text) as string[];
 
     if (
       !Array.isArray(parsed_result) ||
@@ -92,6 +92,6 @@ export const aiService = {
     }
 
     // Using static text as a placeholder
-    return parsed_result as string[];
+    return parsed_result;
   },
 };
