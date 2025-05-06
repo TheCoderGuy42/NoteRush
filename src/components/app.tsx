@@ -8,7 +8,6 @@ import RecordList from "./record-list";
 import AuthStatus from "./auth-status";
 import useGameStateMachine from "./use-game-state-machine";
 import toast, { Toaster } from "react-hot-toast";
-import { P } from "node_modules/better-auth/dist/shared/better-auth.qzSbzJNO";
 import PdfDrawer from "./sidebar/drawer";
 import { useSession, authClient } from "@/server/auth/react-client";
 
@@ -138,21 +137,20 @@ function App() {
   const session = useSession();
 
   const utils = api.useUtils();
-  const { mutate: addPdf, isPending: isAddingPdf } =
-    api.pdfProcessor.add.useMutation({
-      onSuccess: (data) => {
-        console.log("Successfully added PDF:", data);
-        toast.success("PDF uploaded successfully!");
-        utils.pdfProcessor.get.invalidate();
-      },
-      onError: (error) => {
-        console.error("Error adding PDF:", error);
-        toast.error(`Failed to upload PDF: ${error.message}`);
-      },
-      onSettled: () => {
-        toast.dismiss("pdf-upload");
-      },
-    });
+  const { mutate: addPdf } = api.pdfProcessor.add.useMutation({
+    onSuccess: (data) => {
+      console.log("Successfully added PDF:", data);
+      toast.success("PDF uploaded successfully!");
+      utils.pdfProcessor.get.invalidate();
+    },
+    onError: (error) => {
+      console.error("Error adding PDF:", error);
+      toast.error(`Failed to upload PDF: ${error.message}`);
+    },
+    onSettled: () => {
+      toast.dismiss("pdf-upload");
+    },
+  });
 
   const [input, setInput] = useState("");
   const [target, setTarget] = useState("");
@@ -168,14 +166,6 @@ function App() {
     if (pdfsQuery.data) {
       console.log(pdfsQuery.data.find((pdf) => pdf.id === pdfId));
     }
-  };
-
-  const get_rand_para = () => {
-    if (!pdfsQuery.data) return;
-    const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
-    if (!pdf) return;
-    const rand_para_id = getRandomInt(pdf.paragraphs.length);
-    const rand_para = pdf.paragraphs[rand_para_id];
   };
 
   useEffect(() => {
@@ -202,7 +192,7 @@ function App() {
     setTarget("");
     inputRef.current?.focus();
     if (!selectedPdf) {
-      setBoilerplate((num) => getRandomInt(data.database.length));
+      setBoilerplate(() => getRandomInt(data.database.length));
     } else {
       if (!pdfsQuery.data) return;
       const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
