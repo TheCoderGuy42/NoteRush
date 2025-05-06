@@ -300,7 +300,7 @@ function App() {
       if (result.error) {
         console.error("Subscription failed:", result.error);
         toast.error(
-          `Subscription failed: ${result.error.message || "Unknown error"}`,
+          `Subscription failed: ${result.error.message ?? "Unknown error"}`,
           {
             id: "subscription",
           },
