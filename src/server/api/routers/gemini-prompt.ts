@@ -78,7 +78,7 @@ export const aiService = {
 
     if (!result.text) return;
 
-    const parsed_result = JSON.parse(result.text);
+    const parsed_result: string[] = JSON.parse(result.text);
 
     if (
       !Array.isArray(parsed_result) ||
