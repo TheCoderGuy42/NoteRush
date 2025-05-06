@@ -5,12 +5,14 @@ import { aiService } from "./gemini-prompt";
 import * as fs from "fs";
 import * as path from "path";
 
+import pdf_parse from "pdf-parse";
+
 // Import pdf-parse dynamically to avoid the initialization error
 // This is necessary because pdf-parse tries to access test files on import
 // which don't exist in serverless environments
-const getPdfParse = async () => {
-  return (await import("pdf-parse")).default;
-};
+// const getPdfParse = async () => {
+//   return (await import("pdf-parse")).default;
+// };
 
 export const pdfProcessor = createTRPCRouter({
   add: protectedProcedure
@@ -48,8 +50,7 @@ export const pdfProcessor = createTRPCRouter({
         try {
           const pdfBinary = Buffer.from(input.pdfBase64, "base64");
           // Get the pdf-parse module dynamically
-          const pdfParse = await getPdfParse();
-          pdfData = await pdfParse(pdfBinary);
+          pdfData = await pdf_parse(pdfBinary);
         } catch (error) {
           console.error("PDF parsing error:", error);
           throw new TRPCError({
