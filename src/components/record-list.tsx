@@ -2,7 +2,7 @@
 "use client";
 import React from "react";
 import { api } from "@/trpc/react";
-import { useRecordStore, type GameStatus } from "@/context/store";
+import { useRecordStore } from "@/context/store";
 
 export default function RecordList() {
   const gameState = useRecordStore((state) => state.status);

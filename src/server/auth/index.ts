@@ -1,7 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { PrismaClient } from "@prisma/client";
-import { env } from "@/env";
 import { stripe } from "@better-auth/stripe";
 import Stripe from "stripe";
 

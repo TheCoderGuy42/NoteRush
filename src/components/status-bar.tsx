@@ -1,11 +1,8 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRecordStore } from "@/context/store";
-import { font } from "@/context/data_types";
 import { api } from "@/trpc/react";
-import { useSession } from "@/server/auth/react-client";
 
 type StatusProps = {
   targetLength: number;
@@ -37,10 +34,10 @@ export default function StatusBar({
   const didSaveRef = useRef<boolean>(false);
 
   // stat refs
-  let wpmRef = useRef<HTMLSpanElement>(null);
-  let timeRef = useRef<HTMLSpanElement>(null);
-  let accuracyRef = useRef<HTMLSpanElement>(null);
-  let mistakesRef = useRef<HTMLSpanElement>(null);
+  const wpmRef = useRef<HTMLSpanElement>(null);
+  const timeRef = useRef<HTMLSpanElement>(null);
+  const accuracyRef = useRef<HTMLSpanElement>(null);
+  const mistakesRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     currentInputLengthRef.current = inputLength;
@@ -58,7 +55,7 @@ export default function StatusBar({
 
   const utils = api.useUtils();
 
-  const { mutate, isPending } = api.typingEntry.add.useMutation({
+  const { mutate } = api.typingEntry.add.useMutation({
     onSuccess: (data) => {
       utils.typingEntry.getAll.invalidate();
     },
@@ -120,7 +117,6 @@ export default function StatusBar({
 
         const accuracy = parseFloat(accVal.toFixed(2));
 
-        // if (isPending) return;
         setTime(time);
         setWPM(wpm); // an extra frame is done so this needs to be added
         setMistakes(mistakes);

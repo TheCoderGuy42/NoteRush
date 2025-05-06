@@ -1,5 +1,4 @@
 "use client";
-import { useRecordStore } from "@/context/store";
 import { useEffect, useRef, useState } from "react";
 import StatusBar from "./status-bar";
 
@@ -17,11 +16,11 @@ function useRenderer(
 } {
   let mistakes = 0;
   const chars = target.split("");
-  let outputElements: React.ReactNode[] = [];
+  const outputElements: React.ReactNode[] = [];
 
   chars.forEach((char, index) => {
     let color = "text-gray-500";
-    let spanId = index === input.length ? "cursor" : undefined;
+    const spanId = index === input.length ? "cursor" : undefined;
     let cursorClass = "";
 
     if (index === input.length) {

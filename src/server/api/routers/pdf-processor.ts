@@ -1,11 +1,5 @@
 import { z } from "zod";
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "@/server/api/trpc";
-import * as fs from "fs";
-import * as path from "path";
+import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { aiService } from "./gemini-prompt";
 import pdfparse from "pdf-parse";

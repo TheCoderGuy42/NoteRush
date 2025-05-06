@@ -1,13 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
 import type { Schema } from "@google/genai";
-import { z } from "zod";
-
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
-
 import { TRPCError } from "@trpc/server";
-
-import { env } from "@/env";
 
 const prompt = `Okay, here is the prompt with the asterisks removed for easier copying and pasting. I've replaced bullet points previously marked with asterisks with hyphens (-) for list clarity.
 

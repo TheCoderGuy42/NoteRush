@@ -17,20 +17,6 @@ export default function PdfDrawer({ selectPdf }: PdfDrawerProps) {
 
   const [isSelected, setSelected] = useState(-1);
 
-  // Skeleton loader component for PDF items
-  const PdfSkeleton = () => (
-    <div className="animate-pulse rounded-md border p-3 dark:border-zinc-700">
-      <div className="mb-1 flex justify-between">
-        <div className="h-5 w-24 rounded bg-zinc-200 dark:bg-zinc-700"></div>
-        <div className="h-4 w-16 rounded bg-zinc-200 dark:bg-zinc-700"></div>
-      </div>
-      <div className="space-y-2 pt-2">
-        <div className="h-3 w-full rounded bg-zinc-200 dark:bg-zinc-700"></div>
-        <div className="h-3 w-3/4 rounded bg-zinc-200 dark:bg-zinc-700"></div>
-      </div>
-    </div>
-  );
-
   return (
     <Drawer.Root direction="right" autoFocus={true}>
       <Drawer.Trigger className="text-s ml-4 font-mono text-gray-300 transition-colors hover:text-gray-500">
