@@ -26,7 +26,7 @@ export default function RecordList() {
   return (
     <section className="mx-auto max-w-md space-y-3">
       <ul className="divide-y divide-gray-200">
-        {data.map(({ id, wpm, time, mistakes, accuracy }) => (
+        {data.map(({ id, wpm, time, mistakes, accuracy, createdAt }) => (
           <li
             key={id}
             className="flex justify-between py-2 text-sm text-gray-600"
@@ -35,6 +35,7 @@ export default function RecordList() {
             <span>{time.toFixed(2)} s</span>
             <span>{mistakes} err</span>
             <span>{accuracy.toFixed(2)} %</span>
+            <span>{createdAt.toISOString()} %</span>
           </li>
         ))}
       </ul>

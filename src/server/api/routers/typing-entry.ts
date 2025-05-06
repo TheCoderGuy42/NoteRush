@@ -38,6 +38,9 @@ export const typingEntry = createTRPCRouter({
       where: {
         userId: userId,
       },
+      orderBy: {
+        id: "desc",
+      },
     });
   }),
 });

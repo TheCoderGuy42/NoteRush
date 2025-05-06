@@ -33,7 +33,7 @@ export const pdfProcessor = createTRPCRouter({
           });
         }
 
-        // Check if user has a Pro subscription
+        // check if user has a Pro subscription
         const userSubscription = await ctx.db.subscription.findFirst({
           where: {
             referenceId: userId,
@@ -42,13 +42,11 @@ export const pdfProcessor = createTRPCRouter({
           },
         });
 
-        // Set PDF limit based on subscription status
         const pdfLimit = userSubscription ? 50 : 5;
 
-        // Count user's existing PDFs
         const userPdfCount = await ctx.db.pdf.count({
           where: {
-            userId: userId, // Filter by the current user
+            userId: userId,
           },
         });
 
