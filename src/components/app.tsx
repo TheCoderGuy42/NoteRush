@@ -344,19 +344,33 @@ function App() {
         {session.data && (
           <>
             {!maxedFreeTier ? (
-              <button
-                data-tooltip-id="upload-limit-tooltip"
-                data-tooltip-content="Free users can upload up to 5 PDFs. Upgrade to Pro for up to 50 PDFs!"
-                className={
-                  "text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
-                }
-                onClick={triggerFileUpload}
-              >
-                upload pdf
-              </button>
+              <>
+                <button
+                  data-tooltip-id="upload-limit-tooltip"
+                  data-tooltip-content="Free users can upload up to 5 PDFs. Upgrade to Pro for up to 50 PDFs!"
+                  className={
+                    "text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
+                  }
+                  onClick={triggerFileUpload}
+                >
+                  upload pdf
+                </button>
+                <Tooltip
+                  id="upload-limit-tooltip"
+                  place="bottom"
+                  style={{
+                    backgroundColor: "#333",
+                    color: "gray",
+                    maxWidth: "250px",
+                    textAlign: "center",
+                  }}
+                />
+              </>
             ) : (
               <>
                 <button
+                  data-tooltip-id="upload-limit-tooltip"
+                  data-tooltip-content="Free users can upload up to 5 PDFs. Upgrade to Pro for up to 50 PDFs!"
                   className={"text-s font-mono text-gray-500 transition-colors"}
                 >
                   upload pdf
