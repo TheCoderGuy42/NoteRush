@@ -15,7 +15,7 @@ export default function AuthStatus() {
         <>
           <button
             className="text-s mr-5 font-mono text-gray-300 transition-colors hover:text-gray-500"
-            onClick={async () => {
+            onClick={() => {
               goToSignIn();
             }}
           >
@@ -28,8 +28,8 @@ export default function AuthStatus() {
           <div className="text-s mr-5 font-mono text-gray-300 transition-colors hover:text-gray-500">
             <button
               className="text-sfont-mono text-gray-300 transition-colors hover:text-gray-500"
-              onClick={async () => {
-                await signOut();
+              onClick={() => {
+                signOut();
               }}
             >
               sign out
