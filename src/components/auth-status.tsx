@@ -16,7 +16,7 @@ export default function AuthStatus() {
           <button
             className="text-s mr-5 font-mono text-gray-300 transition-colors hover:text-gray-500"
             onClick={async () => {
-              await goToSignIn();
+              goToSignIn();
             }}
           >
             sign in
