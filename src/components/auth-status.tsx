@@ -29,7 +29,7 @@ export default function AuthStatus() {
             <button
               className="text-sfont-mono text-gray-300 transition-colors hover:text-gray-500"
               onClick={() => {
-                signOut();
+                void signOut();
               }}
             >
               sign out

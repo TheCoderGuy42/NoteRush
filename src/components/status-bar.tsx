@@ -122,7 +122,7 @@ export default function StatusBar({
         setMistakes(mistakes);
         setAccuracy(accuracy);
 
-        mutate({
+        void mutate({
           wpm,
           time,
           mistakes,

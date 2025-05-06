@@ -318,7 +318,7 @@ function App() {
             {/* Add subscription button */}
             <button
               className="text-s ml-4 font-mono text-gray-300 transition-colors hover:text-gray-500"
-              onClick={handleSubscribeClick}
+              onClick={() => void handleSubscribeClick()}
             >
               go pro
             </button>
