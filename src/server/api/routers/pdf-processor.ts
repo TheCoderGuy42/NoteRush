@@ -33,16 +33,31 @@ export const pdfProcessor = createTRPCRouter({
           });
         }
 
+        // Check if user has a Pro subscription
+        const userSubscription = await ctx.db.subscription.findFirst({
+          where: {
+            referenceId: userId,
+            plan: "pro",
+            status: "active",
+          },
+        });
+
+        // Set PDF limit based on subscription status
+        const pdfLimit = userSubscription ? 50 : 5;
+
+        // Count user's existing PDFs
         const userPdfCount = await ctx.db.pdf.count({
           where: {
             userId: userId, // Filter by the current user
           },
         });
 
-        if (userPdfCount > 5) {
+        if (userPdfCount >= pdfLimit) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
-            message: "Max 5 PDF's",
+            message: userSubscription
+              ? `Pro users can upload up to ${pdfLimit} PDFs`
+              : `Free users can upload up to ${pdfLimit} PDFs. Upgrade to Pro for up to 50 PDFs!`,
           });
         }
 
@@ -124,6 +139,7 @@ export const pdfProcessor = createTRPCRouter({
           paragraphs: {
             select: {
               text: true,
+              id: true,
             },
             orderBy: {
               id: "asc",
