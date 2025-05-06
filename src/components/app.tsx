@@ -137,20 +137,21 @@ function App() {
   const session = useSession();
 
   const utils = api.useUtils();
-  const { mutate: addPdf } = api.pdfProcessor.add.useMutation({
-    onSuccess: (data) => {
-      console.log("Successfully added PDF:", data);
-      toast.success("PDF uploaded successfully!");
-      void utils.pdfProcessor.get.invalidate();
-    },
-    onError: (error) => {
-      console.error("Error adding PDF:", error);
-      toast.error(`Failed to upload PDF: ${error.message}`);
-    },
-    onSettled: () => {
-      toast.dismiss("pdf-upload");
-    },
-  });
+  const { mutate: addPdf, isPending: isPdfLoading } =
+    api.pdfProcessor.add.useMutation({
+      onSuccess: (data) => {
+        console.log("Successfully added PDF:", data);
+        toast.success("PDF uploaded successfully!");
+        void utils.pdfProcessor.get.invalidate();
+      },
+      onError: (error) => {
+        console.error("Error adding PDF:", error);
+        toast.error(`Failed to upload PDF: ${error.message}`);
+      },
+      onSettled: () => {
+        toast.dismiss("pdf-upload");
+      },
+    });
 
   const [input, setInput] = useState("");
   const [target, setTarget] = useState("");
@@ -229,6 +230,8 @@ function App() {
       toast.error("Needs to be a pdf");
       return;
     }
+
+    toast.loading(`Uploading PDF: ${filename}`, { id: "pdf-upload" });
 
     const reader = new FileReader();
     reader.onload = async (ev: ProgressEvent<FileReader>) => {
