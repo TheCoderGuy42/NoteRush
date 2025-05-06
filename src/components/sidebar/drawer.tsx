@@ -61,7 +61,7 @@ export default function PdfDrawer({ selectPdf }: PdfDrawerProps) {
                       "text-zinc-800 dark:border-zinc-700 dark:text-zinc-200",
                       // Conditional background and hover states
                       isSelected === id
-                        ? "bg-zinc-200 dark:bg-gray-700" // Selected state background
+                        ? "bg-green-200 dark:bg-green-700" // Selected state background
                         : "hover:bg-zinc-100 dark:hover:bg-zinc-800", // Non-selected hover
                     )}
                     onClick={() => {
