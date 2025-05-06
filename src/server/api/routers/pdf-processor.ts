@@ -39,7 +39,7 @@ export const pdfProcessor = createTRPCRouter({
       const pdfBinary = Buffer.from(input.pdfBase64, "base64");
       const pdfData = await pdfparse(pdfBinary);
 
-      if (!pdfData || !pdfData.text || pdfData.text.trim().length === 0) {
+      if (!pdfData?.text || pdfData.text.trim().length === 0) {
         throw new TRPCError({
           code: "BAD_REQUEST", // It's bad input if you don't accept empty PDFs
           message: `The PDF file '${input.filename}' does not contain any extractable text.`,
@@ -81,11 +81,9 @@ export const pdfProcessor = createTRPCRouter({
       include: {
         paragraphs: {
           select: {
-            // Maybe only select text to avoid large payloads
             text: true,
           },
           orderBy: {
-            // Optional: Order paragraphs if needed
             id: "asc",
           },
         },
