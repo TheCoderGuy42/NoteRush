@@ -141,7 +141,7 @@ function App() {
     onSuccess: (data) => {
       console.log("Successfully added PDF:", data);
       toast.success("PDF uploaded successfully!");
-      void utils.pdfProcessor.get.invalidate();
+      utils.pdfProcessor.get.invalidate();
     },
     onError: (error) => {
       console.error("Error adding PDF:", error);
@@ -159,7 +159,9 @@ function App() {
   );
 
   const [selectedPdf, setSelectedPdf] = useState<number | null>(null);
-  const pdfsQuery = api.pdfProcessor.get.useQuery();
+  const pdfsQuery = api.pdfProcessor.get.useQuery(undefined, {
+    enabled: !!session.data,
+  });
 
   const selectPdf = (pdfId: number) => {
     setSelectedPdf(pdfId);
