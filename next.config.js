@@ -7,10 +7,10 @@ import "./src/env.js";
 /** @type {import("next").NextConfig} */
 const config = {};
 
-module.exports = {
-  experimental: {
-    serverComponentsExternalPackages: ["pdf-parse"],
-  },
-};
+// module.exports = {
+//   experimental: {
+//     serverComponentsExternalPackages: ["pdf-parse"],
+//   },
+// };
 
 export default config;
