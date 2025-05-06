@@ -21,12 +21,12 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geist.variable}`}>
-      <head>
+      {/* <head>
         <script
           crossOrigin="anonymous"
           src="//unpkg.com/react-scan/dist/auto.global.js"
         />
-      </head>
+      </head> */}
       <body>
         <TRPCReactProvider>{children}</TRPCReactProvider>
       </body>

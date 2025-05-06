@@ -141,7 +141,7 @@ function App() {
     onSuccess: (data) => {
       console.log("Successfully added PDF:", data);
       toast.success("PDF uploaded successfully!");
-      utils.pdfProcessor.get.invalidate();
+      void utils.pdfProcessor.get.invalidate();
     },
     onError: (error) => {
       console.error("Error adding PDF:", error);
