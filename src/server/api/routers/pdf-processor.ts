@@ -9,45 +9,7 @@ import * as path from "path";
 // This is necessary because pdf-parse tries to access test files on import
 // which don't exist in serverless environments
 const getPdfParse = async () => {
-  try {
-    // Check if we're in a Node.js environment
-    if (
-      typeof process !== "undefined" &&
-      process.versions &&
-      process.versions.node
-    ) {
-      try {
-        // Create the test directory if it doesn't exist
-        const testDir = path.join(process.cwd(), "test", "data");
-
-        if (!fs.existsSync(path.join(process.cwd(), "test"))) {
-          fs.mkdirSync(path.join(process.cwd(), "test"));
-        }
-
-        if (!fs.existsSync(testDir)) {
-          fs.mkdirSync(testDir);
-        }
-
-        // Create empty test files that pdf-parse tries to access
-        const testFiles = ["05-versions-space.pdf"];
-        for (const file of testFiles) {
-          const filePath = path.join(testDir, file);
-          if (!fs.existsSync(filePath)) {
-            fs.writeFileSync(filePath, "");
-          }
-        }
-      } catch (err) {
-        console.warn("Failed to create test files:", err);
-        // Continue anyway
-      }
-    }
-
-    // Import the module
-    return (await import("pdf-parse")).default;
-  } catch (err) {
-    console.error("Failed to import pdf-parse:", err);
-    throw new Error("Failed to load PDF parsing library");
-  }
+  return (await import("pdf-parse")).default;
 };
 
 export const pdfProcessor = createTRPCRouter({
