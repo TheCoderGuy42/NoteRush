@@ -28,11 +28,11 @@ export default function RecordList({ resetGame }: RecordListProps) {
   }
 
   return (
-    <section className="mx-auto w-[23rem] space-y-3">
+    <section className="mx-auto w-[23rem]">
       <div className="flex justify-center">
         <button
           onClick={resetGame}
-          className={`w-[23rem] cursor-pointer border border-gray-300 py-2 text-center font-mono text-xs text-gray-300 transition-colors hover:text-gray-500`}
+          className={`w-[23rem] cursor-pointer border border-gray-300 text-center font-mono text-xs text-gray-300 transition-colors hover:text-gray-500`}
         >
           reset
         </button>
