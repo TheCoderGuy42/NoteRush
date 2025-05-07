@@ -93,65 +93,58 @@ export const aiService = {
       return fallbackParagraphs;
     }
 
-    try {
-      const contents = prompt + pdfBase64;
+    const pdfPart: Part = {
+      inlineData: {
+        mimeType: "application/pdf",
+        data: pdfBase64,
+      },
+    };
 
-      const pdfPart: Part = {
-        inlineData: {
-          mimeType: "application/pdf",
-          data: pdfBase64,
-        },
-      };
+    const textPart: Part = {
+      text: prompt,
+    };
 
-      const textPart: Part = {
-        text: prompt,
-      };
+    const result = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: [{ role: "user", parts: [textPart, pdfPart] }],
+      config: {
+        responseSchema: paragraphListSchema,
+        responseMimeType: "application/json",
+      },
+    });
 
-      const result = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: [{ role: "user", parts: [textPart, pdfPart] }],
-        config: {
-          responseSchema: paragraphListSchema,
-          responseMimeType: "application/json",
-        },
-      });
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: `oki so whats da result ${result.text}`,
+    });
 
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: `oki so whats da result ${result.text}`,
-      });
-
-      const response = result.text;
-      if (!response) {
-        console.warn("Empty response from Gemini API");
-        return fallbackParagraphs;
-      }
-      // try {
-      //   const parsed_result = JSON.parse(response) as string[];
-
-      //   if (
-      //     !Array.isArray(parsed_result) ||
-      //     !parsed_result.every((item) => typeof item === "string") ||
-      //     parsed_result.length === 0
-      //   ) {
-      //     console.error(
-      //       "Invalid response format from Gemini API:",
-      //       parsed_result,
-      //     );
-      //     return fallbackParagraphs;
-      //   }
-
-      //   return parsed_result;
-      // } catch (parseError: unknown) {
-      //   throw new TRPCError({
-      //     code: "INTERNAL_SERVER_ERROR",
-      //     message: `Some error : ${parseError}...`,
-      //   });
-      //   return fallbackParagraphs;
-      // }
-    } catch (error) {
-      console.error("Error calling Gemini API:", error);
+    const response = result.text;
+    if (!response) {
+      console.warn("Empty response from Gemini API");
       return fallbackParagraphs;
     }
+    // try {
+    //   const parsed_result = JSON.parse(response) as string[];
+
+    //   if (
+    //     !Array.isArray(parsed_result) ||
+    //     !parsed_result.every((item) => typeof item === "string") ||
+    //     parsed_result.length === 0
+    //   ) {
+    //     console.error(
+    //       "Invalid response format from Gemini API:",
+    //       parsed_result,
+    //     );
+    //     return fallbackParagraphs;
+    //   }
+
+    //   return parsed_result;
+    // } catch (parseError: unknown) {
+    //   throw new TRPCError({
+    //     code: "INTERNAL_SERVER_ERROR",
+    //     message: `Some error : ${parseError}...`,
+    //   });
+    //   return fallbackParagraphs;
+    // }
   },
 };
