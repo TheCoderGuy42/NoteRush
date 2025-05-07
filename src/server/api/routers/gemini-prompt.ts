@@ -1,9 +1,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-import type { Schema } from "@google/genai";
+import type { Schema, Part } from "@google/genai";
 import { TRPCError } from "@trpc/server";
 
-const prompt = `You are an AI assistant tasked with preparing text excerpts for a typing racer game. The text comes from user-uploaded documents, likely personal notes, articles, or informational PDFs focused on technical or academic subjects. The goal is to extract short, highly information-dense, self-contained statements that explain or define key concepts, suitable for typing practice.
+const prompt = `You are an AI assistant tasked with preparing text excerpts for a typing racer game.  The input is a PDF document, likely containing personal notes, articles, or informational content focused on technical or academic subjects.  The goal is to extract short, highly information-dense, self-contained statements that explain or define key concepts, suitable for typing practice.
 
 **Crucial Objective: Emulate the style, density, and informational focus of the provided "Desired Output Examples" below.**
 
@@ -78,14 +78,7 @@ const paragraphListSchema: Schema = {
 };
 
 export const aiService = {
-  generateContent: async (pdfText: string) => {
-    if (pdfText.length > 200000) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: `The PDF file is too long`,
-      });
-    }
-
+  generateContent: async (pdfBase64: string) => {
     // Check if Gemini API is configured
     if (!ai || !process.env.GEMINI_API) {
       console.warn("Gemini API key not found, using fallback content");
@@ -93,11 +86,22 @@ export const aiService = {
     }
 
     try {
-      const contents = prompt + pdfText;
+      const contents = prompt + pdfBase64;
+
+      const pdfPart: Part = {
+        inlineData: {
+          mimeType: "application/pdf",
+          data: pdfBase64,
+        },
+      };
+
+      const textPart: Part = {
+        text: prompt,
+      };
 
       const result = await ai.models.generateContent({
         model: "gemini-2.0-flash",
-        contents: contents,
+        contents: [pdfPart, textPart],
         config: {
           responseSchema: paragraphListSchema,
           responseMimeType: "application/json",

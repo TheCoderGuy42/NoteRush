@@ -2,17 +2,8 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { aiService } from "./gemini-prompt";
-import * as fs from "fs";
-import * as path from "path";
 
-import pdf_parse from "pdf-parse";
-
-// Import pdf-parse dynamically to avoid the initialization error
-// This is necessary because pdf-parse tries to access test files on import
-// which don't exist in serverless environments
-// const getPdfParse = async () => {
-//   return (await import("pdf-parse")).default;
-// };
+const MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export const pdfProcessor = createTRPCRouter({
   add: protectedProcedure
@@ -59,11 +50,9 @@ export const pdfProcessor = createTRPCRouter({
           });
         }
 
-        let pdfData;
+        let pdfBinary: Buffer;
         try {
-          const pdfBinary = Buffer.from(input.pdfBase64, "base64");
-          // Get the pdf-parse module dynamically
-          pdfData = await pdf_parse(pdfBinary);
+          pdfBinary = Buffer.from(input.pdfBase64, "base64");
         } catch (error) {
           console.error("PDF parsing error:", error);
           throw new TRPCError({
@@ -73,16 +62,16 @@ export const pdfProcessor = createTRPCRouter({
           });
         }
 
-        if (!pdfData?.text || pdfData.text.trim().length === 0) {
+        if (input.pdfBase64.length > MAX_PDF_SIZE_BYTES) {
           throw new TRPCError({
-            code: "BAD_REQUEST", // It's bad input if you don't accept empty PDFs
-            message: `The PDF file '${input.filename}' does not contain any extractable text.`,
+            code: "PAYLOAD_TOO_LARGE",
+            message: `The PDF file '${input.filename}' is too large. Maximum size is ${MAX_PDF_SIZE_BYTES / (1024 * 1024)}MB.`,
           });
         }
 
         let paragraphs;
         try {
-          paragraphs = await aiService.generateContent(pdfData.text);
+          paragraphs = await aiService.generateContent(input.pdfBase64);
         } catch (error) {
           console.error("AI processing error:", error);
           throw new TRPCError({
