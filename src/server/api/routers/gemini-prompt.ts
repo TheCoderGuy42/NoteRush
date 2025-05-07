@@ -116,13 +116,15 @@ export const aiService = {
         },
       });
 
-      if (!result.text) {
+      const response = result.text;
+
+      if (!response) {
         console.warn("Empty response from Gemini API");
         return fallbackParagraphs;
       }
 
       try {
-        const parsed_result = JSON.parse(result.text) as string[];
+        const parsed_result = JSON.parse(response) as string[];
 
         if (
           !Array.isArray(parsed_result) ||
@@ -137,14 +139,18 @@ export const aiService = {
         }
 
         return parsed_result;
-      } catch (parseError) {
+      } catch (parseError: any) {
         console.error(
-          "Error parsing Gemini API response:",
-          parseError,
-          "Raw response:",
-          result.text,
+          "Error parsing Gemini API JSON response:",
+          parseError.message,
+          "--- Raw response text from Gemini that caused the error (THIS IS KEY!) ---",
+          response,
+          "--- End of raw response ---",
         );
-        return fallbackParagraphs;
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `AI service returned a non-JSON response. The problematic text started with: ${response.substring(0, 150)}...`,
+        });
       }
     } catch (error) {
       console.error("Error calling Gemini API:", error);
