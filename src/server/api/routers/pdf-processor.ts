@@ -62,7 +62,7 @@ export const pdfProcessor = createTRPCRouter({
           });
         }
 
-        if (input.pdfBase64.length > MAX_PDF_SIZE_BYTES) {
+        if (pdfBinary.length > MAX_PDF_SIZE_BYTES) {
           throw new TRPCError({
             code: "PAYLOAD_TOO_LARGE",
             message: `The PDF file '${input.filename}' is too large. Maximum size is ${MAX_PDF_SIZE_BYTES / (1024 * 1024)}MB.`,
