@@ -198,6 +198,7 @@ function App() {
 
   const selectPdf = (pdfId: number) => {
     setSelectedPdf(pdfId);
+    setInput("");
     if (pdfsQuery.data) {
       console.log(pdfsQuery.data.find((pdf) => pdf.id === pdfId));
     }
@@ -335,7 +336,7 @@ function App() {
     try {
       toast.loading("Preparing subscription...", { id: "subscription" });
       const baseUrl = window.location.origin;
-      const successUrl = `${baseUrl}/dashboard?subscribed=true`; // Or your success page
+      const successUrl = `${baseUrl}`; // success is still the same url
       const cancelUrl = `${baseUrl}`;
 
       const result = await authClient.subscription.upgrade({

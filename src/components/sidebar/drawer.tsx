@@ -15,6 +15,8 @@ export default function PdfDrawer({ selectPdf }: PdfDrawerProps) {
     staleTime: 5 * 60 * 1000,
   });
 
+  console.log(pdfsQuery);
+
   const [isSelected, setSelected] = useState(-1);
 
   return (
