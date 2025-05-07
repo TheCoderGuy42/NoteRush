@@ -43,7 +43,7 @@ export default function RecordList({ resetGame }: RecordListProps) {
   const avgAccuracy = totalAccuracy / data.length;
 
   return (
-    <div className="flex w-full flex-col gap-6 md:flex-row md:items-start md:justify-center">
+    <>
       {/* Main Record List Section */}
       <section className="mx-auto w-[23rem]">
         <div className="flex justify-center">
@@ -92,6 +92,6 @@ export default function RecordList({ resetGame }: RecordListProps) {
           </div>
         </div>
       </aside>
-    </div>
+    </>
   );
 }
