@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { aiService } from "./gemini-prompt";
 
-const MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+const MAX_PDF_SIZE_BYTES = 4 * 1024 * 1024; // 10 MB
 
 export const pdfProcessor = createTRPCRouter({
   add: protectedProcedure
