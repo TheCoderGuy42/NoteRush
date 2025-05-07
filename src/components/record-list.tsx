@@ -35,7 +35,6 @@ export default function RecordList() {
             <span>{time.toFixed(2)} s</span>
             <span>{mistakes} err</span>
             <span>{accuracy.toFixed(2)} %</span>
-            <span>{createdAt.toISOString()} %</span>
           </li>
         ))}
       </ul>
