@@ -8,7 +8,7 @@ import { TRPCReactProvider } from "@/trpc/react";
 export const metadata: Metadata = {
   title: "Note Rush",
   description: "by abilash suresh @chainsaw_co",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  icons: [{ rel: "icon", url: "/logo_note_rush.png" }],
 };
 
 const geist = Geist({
