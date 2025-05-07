@@ -28,7 +28,7 @@ export default function RecordList({ resetGame }: RecordListProps) {
   }
 
   return (
-    <section className="mx-auto max-w-md space-y-3">
+    <section className="mx-auto w-[23rem] space-y-3">
       <div className="flex justify-center">
         <button
           onClick={resetGame}
