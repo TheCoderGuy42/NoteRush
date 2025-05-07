@@ -49,7 +49,7 @@ Instructions:
     *   Ensure standard punctuation. Correct run-on sentences if a simple punctuation addition makes two short, related sentences into a valid snippet (but prefer naturally well-formed single sentences). Remove awkward line breaks within sentences.
     *   Convert all text to lowercase.
     *   Remove any residual formatting artifacts.
-6.  **Filter by Length:** Ensure the final cleaned snippets are concise, ideally between **15 and 40 words**. This range reflects the density of the "Desired Output Examples". Adjust slightly if needed, but the goal is conciseness.
+6.  **Filter by Length:** Ensure the final cleaned snippets are concise, ideally between **30 and 50 words**. This range reflects the density of the "Desired Output Examples". Adjust slightly if needed, but the goal is conciseness.
 7.  **Format Output:** Return a list of the cleaned, information-dense snippets that meet all criteria. Format the output as a JSON list of strings. Provide [Specify Number, e.g., 'up to 15' or 'all suitable'] snippets.
 
 Example of bad output to avoid (too conversational, not definitional):

@@ -29,7 +29,7 @@ export default function RecordList() {
         {data.map(({ id, wpm, time, mistakes, accuracy, createdAt }) => (
           <li
             key={id}
-            className="flex justify-between py-2 text-sm text-gray-600"
+            className="grid grid-cols-[6rem_5rem_4rem_5rem] gap-x-4 py-2 text-sm text-gray-600"
           >
             <span>{wpm.toFixed(2)} WPM</span>
             <span>{time.toFixed(2)} s</span>
