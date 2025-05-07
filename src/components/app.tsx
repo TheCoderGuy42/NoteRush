@@ -151,6 +151,12 @@ function App() {
     refetchOnWindowFocus: true,
   });
 
+  const { data: hasActiveSubscription } =
+    api.limits.hasActiveSubscription.useQuery(undefined, {
+      enabled: !!session.data,
+      refetchOnWindowFocus: true,
+    });
+
   // 2. Define when the upload button should be truly disabled
   const uploadShouldBeDisabled =
     !session.data || // No session, no uploads
@@ -363,6 +369,34 @@ function App() {
     }
   };
 
+  const handleCancelSubscription = async () => {
+    try {
+      toast.loading("Cancelling subscription...", { id: "subscription" });
+      const baseUrl = window.location.origin;
+      const result = await authClient.subscription.cancel({
+        returnUrl: baseUrl,
+      });
+
+      if (result.error) {
+        console.error("Cancellation failed:", result.error);
+        toast.error(
+          `Cancellation failed: ${result.error.message ?? "Unknown error"}`,
+          { id: "subscription" },
+        );
+        return;
+      }
+      toast.success("Subscription cancelled successfully!");
+      void utils.limits.hasActiveSubscription.invalidate();
+      void utils.limits.isAbovePdfLimit.invalidate();
+    } catch (err) {
+      console.error("Cancellation error:", err);
+      toast.error(
+        `Cancellation error: ${err instanceof Error ? err.message : "Unknown error"}`,
+        { id: "subscription" },
+      );
+    }
+  };
+
   return (
     <>
       <Toaster position="top-right" />
@@ -412,12 +446,21 @@ function App() {
 
             <PdfDrawer selectPdf={selectPdf} />
 
-            <button
-              className="text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
-              onClick={() => void handleSubscribeClick()}
-            >
-              go pro
-            </button>
+            {hasActiveSubscription ? (
+              <button
+                className="text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
+                onClick={() => void handleCancelSubscription()}
+              >
+                cancel subscription
+              </button>
+            ) : (
+              <button
+                className="text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
+                onClick={() => void handleSubscribeClick()}
+              >
+                go pro
+              </button>
+            )}
           </>
         )}
 

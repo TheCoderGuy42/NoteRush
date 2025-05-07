@@ -23,4 +23,20 @@ export const limits = createTRPCRouter({
 
     return pdfCount >= pdfLimit;
   }),
+
+  hasActiveSubscription: protectedProcedure
+    .input(z.void())
+    .query(async ({ ctx }) => {
+      const userId = ctx.session.user.id;
+
+      const userSubscription = await ctx.db.subscription.findFirst({
+        where: {
+          referenceId: userId,
+          plan: "pro",
+          status: "active",
+        },
+      });
+
+      return !!userSubscription;
+    }),
 });
