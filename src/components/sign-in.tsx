@@ -18,8 +18,8 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
 
   return (
-    <Card className="max-w-md">
-      <CardHeader>
+    <Card className="mx-auto max-w-md">
+      <CardHeader className="text-center">
         <CardTitle className="text-lg md:text-xl">Sign In</CardTitle>
         <CardDescription className="text-xs md:text-sm">
           Enter your email below to login to your account
@@ -27,15 +27,10 @@ export default function SignIn() {
       </CardHeader>
       <CardContent>
         <div className="grid gap-4">
-          <div
-            className={cn(
-              "flex w-full items-center gap-2",
-              "flex-col justify-between",
-            )}
-          >
+          <div className="flex w-full items-center justify-center">
             <Button
               variant="outline"
-              className={cn("w-full gap-2")}
+              className={cn("w-full gap-2 md:w-2/3")}
               disabled={loading}
               onClick={async () => {
                 await signIn.social(
