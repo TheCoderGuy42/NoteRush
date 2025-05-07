@@ -20,7 +20,7 @@ export const pdfProcessor = createTRPCRouter({
         if (!userId) {
           throw new TRPCError({
             code: "UNAUTHORIZED",
-            message: "You must be logged in to upload and process PDFs.",
+            message: "You have to be logged in to upload and process PDFs.",
           });
         }
 
