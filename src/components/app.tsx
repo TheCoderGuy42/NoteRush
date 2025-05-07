@@ -136,6 +136,14 @@ function App() {
   }
   const session = useSession();
 
+  const limitsQuery = api.limits.isAbovePdfLimit.useQuery(undefined, {
+    enabled: !!session.data,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+  });
+
+  const maxedFreeTier = limitsQuery.data ?? false;
+
   const utils = api.useUtils();
   const { mutate: addPdf, isPending: isPdfLoading } =
     api.pdfProcessor.add.useMutation({
@@ -143,9 +151,12 @@ function App() {
         console.log("Successfully added PDF:", data);
         toast.success("PDF uploaded successfully!");
         void utils.pdfProcessor.get.invalidate();
+        void utils.limits.isAbovePdfLimit.invalidate();
       },
       onError: (error) => {
         console.error("Error adding PDF:", error);
+        // Refresh limits data on error too
+        void utils.limits.isAbovePdfLimit.invalidate();
         toast.error(`Failed to upload PDF: ${error.message}`);
       },
       onSettled: () => {
@@ -163,9 +174,6 @@ function App() {
   const pdfsQuery = api.pdfProcessor.get.useQuery(undefined, {
     enabled: !!session.data,
   });
-
-  const numberOfPdfs = pdfsQuery.data?.length ?? 0;
-  const maxedFreeTier = numberOfPdfs > 5;
 
   const selectPdf = (pdfId: number) => {
     setSelectedPdf(pdfId);
@@ -338,18 +346,7 @@ function App() {
         <AuthStatus />
         {session.data && (
           <>
-            {!maxedFreeTier ? (
-              <>
-                <button
-                  className={
-                    "text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
-                  }
-                  onClick={triggerFileUpload}
-                >
-                  upload pdf
-                </button>
-              </>
-            ) : (
+            {maxedFreeTier ? (
               <>
                 <button
                   data-tooltip-id="upload-limit-tooltip"
@@ -368,6 +365,17 @@ function App() {
                     textAlign: "center",
                   }}
                 />
+              </>
+            ) : (
+              <>
+                <button
+                  className={
+                    "text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
+                  }
+                  onClick={triggerFileUpload}
+                >
+                  upload pdf
+                </button>
               </>
             )}
             <PdfDrawer selectPdf={selectPdf} />

@@ -5,6 +5,7 @@ import {
 } from "@/server/api/trpc";
 import { typingEntry } from "@/server/api/routers/typing-entry";
 import { pdfProcessor } from "./routers/pdf-processor";
+import { limits } from "./routers/check-limits";
 
 /**
  * This is the primary router for your server.
@@ -14,13 +15,7 @@ import { pdfProcessor } from "./routers/pdf-processor";
 export const appRouter = createTRPCRouter({
   typingEntry: typingEntry,
   pdfProcessor: pdfProcessor,
-  // Add a simple ping procedure to test if the API is working
-  ping: publicProcedure.query(() => {
-    return {
-      status: "ok",
-      timestamp: new Date().toISOString(),
-    };
-  }),
+  limits: limits,
 });
 
 // export type definition of API
