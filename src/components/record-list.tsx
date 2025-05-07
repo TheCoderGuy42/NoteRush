@@ -43,7 +43,7 @@ export default function RecordList({ resetGame }: RecordListProps) {
   const avgAccuracy = totalAccuracy / data.length;
 
   return (
-    <>
+    <div className="relative flex w-full justify-center">
       {/* Main Record List Section */}
       <section className="mx-auto w-[23rem]">
         <div className="flex justify-center">
@@ -69,7 +69,10 @@ export default function RecordList({ resetGame }: RecordListProps) {
         </ul>
       </section>
       {/* Averages Summary Card */}
-      <aside className="flex w-full flex-col gap-2 rounded-lg border border-gray-200 bg-white p-5 font-mono text-sm text-gray-700 shadow-md md:w-64 dark:border-zinc-700 dark:bg-zinc-900 dark:text-gray-200">
+      <div
+        className="mt-6 flex w-full flex-col gap-2 rounded-lg border border-gray-200 bg-white p-5 font-mono text-sm text-gray-700 shadow-md md:absolute md:top-0 md:left-full md:mt-0 md:ml-8 md:w-64 dark:border-zinc-700 dark:bg-zinc-900 dark:text-gray-200"
+        style={{ maxWidth: "16rem" }}
+      >
         <h3 className="mb-2 text-base font-semibold text-gray-900 dark:text-gray-100">
           Averages
         </h3>
@@ -91,7 +94,7 @@ export default function RecordList({ resetGame }: RecordListProps) {
             <span>{avgAccuracy.toFixed(2)} %</span>
           </div>
         </div>
-      </aside>
-    </>
+      </div>
+    </div>
   );
 }
