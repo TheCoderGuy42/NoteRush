@@ -11,6 +11,7 @@ import useGameStateMachine from "./use-game-state-machine";
 import toast, { Toaster } from "react-hot-toast";
 import PdfDrawer from "./sidebar/drawer";
 import { useSession, authClient } from "@/server/auth/react-client";
+import HelpButton from "./help-button";
 
 const data = {
   // Keep your data object as is
@@ -463,6 +464,7 @@ function App() {
             )}
           </>
         )}
+        <HelpButton />
 
         <input
           ref={fileInputRef}
