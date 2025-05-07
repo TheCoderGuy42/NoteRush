@@ -4,7 +4,11 @@ import React from "react";
 import { api } from "@/trpc/react";
 import { useRecordStore } from "@/context/store";
 
-export default function RecordList() {
+interface RecordListProps {
+  resetGame: () => void;
+}
+
+export default function RecordList({ resetGame }: RecordListProps) {
   const gameState = useRecordStore((state) => state.status);
 
   const { data, isLoading } = api.typingEntry.getAll.useQuery(undefined, {
@@ -25,6 +29,12 @@ export default function RecordList() {
 
   return (
     <section className="mx-auto max-w-md space-y-3">
+      <button
+        onClick={resetGame}
+        className={`cursor-pointer border-1 text-center font-mono text-2xl text-xs text-gray-300 transition-colors hover:text-gray-500`}
+      >
+        reset
+      </button>
       <ul className="divide-y divide-gray-200">
         {data.map(({ id, wpm, time, mistakes, accuracy, createdAt }) => (
           <li

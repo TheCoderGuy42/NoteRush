@@ -489,15 +489,7 @@ function App() {
 
       {gameState === "stopped" && (
         <>
-          <div className="mx-auto flex max-w-md flex-col justify-center">
-            <button
-              onClick={resetGame}
-              className={`cursor-pointer border-1 text-center font-mono text-2xl text-xs text-gray-300 transition-colors hover:text-gray-500`}
-            >
-              reset
-            </button>
-          </div>
-          <RecordList />
+          <RecordList resetGame={resetGame} />
         </>
       )}
     </>
