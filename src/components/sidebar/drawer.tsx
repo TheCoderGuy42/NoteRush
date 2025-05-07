@@ -21,7 +21,7 @@ export default function PdfDrawer({ selectPdf }: PdfDrawerProps) {
 
   return (
     <Drawer.Root direction="right" autoFocus={true}>
-      <Drawer.Trigger className="text-s font-mono text-gray-300 transition-colors hover:text-gray-500">
+      <Drawer.Trigger className="text-s cursor-pointer font-mono text-gray-300 transition-colors hover:text-gray-500">
         pick pdf
       </Drawer.Trigger>
 
