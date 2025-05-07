@@ -79,25 +79,21 @@ export default function RecordList({ resetGame }: RecordListProps) {
           </ul>
         </section>
 
-        <div className="mt-6 w-full max-w-[23rem] flex-col gap-2 rounded-lg border border-gray-200 bg-white p-5 font-mono text-sm text-gray-700 shadow-md md:absolute md:top-0 md:left-full md:mt-0 md:ml-8 md:w-64 md:max-w-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-gray-200">
+        <div className="mt-6 w-full max-w-[23rem] flex-col gap-2 rounded-lg border border-gray-200 p-5 font-mono text-sm text-gray-700 md:absolute md:top-0 md:left-full md:mt-0 md:ml-8 md:w-64 md:max-w-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-gray-200">
           <h3 className="mb-2 text-base font-semibold text-gray-900 dark:text-gray-100">
             Averages
           </h3>
           <div className="flex flex-col gap-1">
             <div className="flex justify-between">
-              <span>WPM:</span>
-              <span>{avgWPM.toFixed(2)}</span>
+              <span>{avgWPM.toFixed(2)} wpm</span>
             </div>
             <div className="flex justify-between">
-              <span>Time:</span>
               <span>{avgTime.toFixed(2)} s</span>
             </div>
             <div className="flex justify-between">
-              <span>Mistakes:</span>
-              <span>{avgMistakes.toFixed(2)}</span>
+              <span>{avgMistakes.toFixed(2)} err</span>
             </div>
             <div className="flex justify-between">
-              <span>Accuracy:</span>
               <span>{avgAccuracy.toFixed(2)} %</span>
             </div>
           </div>
