@@ -129,11 +129,13 @@ const data = {
   ],
 };
 
+function getRandomInt(max: number) {
+  return Math.floor(Math.random() * max);
+}
+
 function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  function getRandomInt(max: number) {
-    return Math.floor(Math.random() * max);
-  }
+
   const session = useSession();
 
   const limitsQuery = api.limits.isAbovePdfLimit.useQuery(undefined, {
@@ -230,6 +232,7 @@ function App() {
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("the file change is hit");
     if (!e.target.files) return;
     if (!e.target.files[0]) return;
 
@@ -259,6 +262,7 @@ function App() {
       return ev.target?.result;
     };
     reader.readAsDataURL(file);
+    fileInputRef.current = null;
   };
 
   // if its not loading and dat and data doesn't equal the text set and you're playing the game then don't set the target text
