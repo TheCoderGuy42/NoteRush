@@ -29,12 +29,14 @@ export default function RecordList({ resetGame }: RecordListProps) {
 
   return (
     <section className="mx-auto max-w-md space-y-3">
-      <button
-        onClick={resetGame}
-        className={`cursor-pointer border-1 text-center font-mono text-2xl text-xs text-gray-300 transition-colors hover:text-gray-500`}
-      >
-        reset
-      </button>
+      <div className="flex justify-center">
+        <button
+          onClick={resetGame}
+          className={`w-[23rem] cursor-pointer border border-gray-300 py-2 text-center font-mono text-xs text-gray-300 transition-colors hover:text-gray-500`}
+        >
+          reset
+        </button>
+      </div>
       <ul className="divide-y divide-gray-200">
         {data.map(({ id, wpm, time, mistakes, accuracy, createdAt }) => (
           <li
