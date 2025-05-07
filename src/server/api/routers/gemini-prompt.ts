@@ -139,10 +139,9 @@ export const aiService = {
         }
 
         return parsed_result;
-      } catch (parseError: any) {
+      } catch {
         console.error(
           "Error parsing Gemini API JSON response:",
-          parseError.message,
           "--- Raw response text from Gemini that caused the error (THIS IS KEY!) ---",
           response,
           "--- End of raw response ---",
