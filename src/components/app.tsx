@@ -138,11 +138,10 @@ function App() {
 
   const limitsQuery = api.limits.isAbovePdfLimit.useQuery(undefined, {
     enabled: !!session.data,
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
   });
 
   const maxedFreeTier = limitsQuery.data ?? false;
+  console.log("maxed free tier " + maxedFreeTier);
 
   const utils = api.useUtils();
   const { mutate: addPdf, isPending: isPdfLoading } =
@@ -292,7 +291,6 @@ function App() {
     try {
       toast.loading("Preparing subscription...", { id: "subscription" });
 
-      // Get the absolute URLs for success and cancel
       const baseUrl = window.location.origin;
       const successUrl = `${baseUrl}/dashboard?subscribed=true`;
       const cancelUrl = `${baseUrl}`;
