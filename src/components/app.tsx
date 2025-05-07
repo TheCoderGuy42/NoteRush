@@ -12,6 +12,7 @@ import toast, { Toaster } from "react-hot-toast";
 import PdfDrawer from "./sidebar/drawer";
 import { useSession, authClient } from "@/server/auth/react-client";
 import HelpButton from "./help-button";
+import { TRPCError } from "node_modules/@trpc/server/dist/@trpc/server";
 
 const data = {
   // Keep your data object as is

@@ -139,17 +139,12 @@ export const aiService = {
         }
 
         return parsed_result;
-      } catch {
-        console.error(
-          "Error parsing Gemini API JSON response:",
-          "--- Raw response text from Gemini that caused the error (THIS IS KEY!) ---",
-          response,
-          "--- End of raw response ---",
-        );
+      } catch (parseError: unknown) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: `AI service returned a non-JSON response. The problematic text started with: ${response.substring(0, 150)}...`,
+          message: `Some error : ${parseError}...`,
         });
+        return fallbackParagraphs;
       }
     } catch (error) {
       console.error("Error calling Gemini API:", error);
