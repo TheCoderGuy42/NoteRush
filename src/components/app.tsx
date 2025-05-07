@@ -405,11 +405,7 @@ function App() {
                 onClick={triggerFileUpload}
                 disabled={isPdfLoading || isLoadingLimit} // Also disable if limit is still loading
               >
-                {isPdfLoading
-                  ? "Uploading..."
-                  : isLoadingLimit
-                    ? "Checking..."
-                    : "upload pdf"}
+                {isPdfLoading ? "uploading..." : "upload pdf"}
               </button>
             )}
 
