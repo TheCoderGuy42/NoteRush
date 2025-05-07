@@ -198,7 +198,7 @@ function App() {
 
   const selectPdf = (pdfId: number) => {
     setSelectedPdf(pdfId);
-    setInput("");
+    resetGame();
     if (pdfsQuery.data) {
       console.log(pdfsQuery.data.find((pdf) => pdf.id === pdfId));
     }
