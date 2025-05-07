@@ -136,8 +136,6 @@ function App() {
   }
   const session = useSession();
 
-  const [maxedFreeTier, setMaxedFreeTier] = useState(false);
-
   const utils = api.useUtils();
   const { mutate: addPdf, isPending: isPdfLoading } =
     api.pdfProcessor.add.useMutation({
@@ -148,12 +146,6 @@ function App() {
       },
       onError: (error) => {
         console.error("Error adding PDF:", error);
-        if (
-          error.message ===
-          "Free users can upload up to 5 PDFs. Upgrade to Pro for up to 50 PDFs!"
-        ) {
-          setMaxedFreeTier(true);
-        }
         toast.error(`Failed to upload PDF: ${error.message}`);
       },
       onSettled: () => {
@@ -171,6 +163,9 @@ function App() {
   const pdfsQuery = api.pdfProcessor.get.useQuery(undefined, {
     enabled: !!session.data,
   });
+
+  const numberOfPdfs = pdfsQuery.data?.length ?? 0;
+  const maxedFreeTier = numberOfPdfs > 5;
 
   const selectPdf = (pdfId: number) => {
     setSelectedPdf(pdfId);
@@ -346,8 +341,6 @@ function App() {
             {!maxedFreeTier ? (
               <>
                 <button
-                  data-tooltip-id="upload-limit-tooltip"
-                  data-tooltip-content="Free users can upload up to 5 PDFs. Upgrade to Pro for up to 50 PDFs!"
                   className={
                     "text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
                   }
@@ -355,16 +348,6 @@ function App() {
                 >
                   upload pdf
                 </button>
-                <Tooltip
-                  id="upload-limit-tooltip"
-                  place="bottom"
-                  style={{
-                    backgroundColor: "#333",
-                    color: "gray",
-                    maxWidth: "250px",
-                    textAlign: "center",
-                  }}
-                />
               </>
             ) : (
               <>
