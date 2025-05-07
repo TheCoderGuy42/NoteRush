@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
-import { Tooltip } from "react-tooltip";
+import { Tooltip } from "react-tooltip"; // Import the Tooltip component
+
 import TypingArea from "./typing-area";
 import { useRecordStore, type GameStatus } from "@/context/store";
 import { api } from "@/trpc/react";
@@ -12,7 +13,9 @@ import PdfDrawer from "./sidebar/drawer";
 import { useSession, authClient } from "@/server/auth/react-client";
 
 const data = {
+  // Keep your data object as is
   paragraphsnow: [
+    // ... your paragraphsnow array ...
     "snowflake enables every organization to mobilize their data with snowflakes data cloud customers use the data cloud to unite siloed data discover and securely share data power data applications and execute diverse aiml and analytic workloads",
     "wherever data or users live snowflake delivers a single data experience that spans multiple clouds and geographies thousands of customers across many industries including 647 of the 2023 forbes global 2000 g2k use snowflake data cloud to power their businesses",
     "these applications are not only transforming the way we interact with technology but also reshaping various sectors of society theyre harnessing the power of vast amounts of data and leveraging advanced artificial intelligence ai algorithms",
@@ -44,8 +47,8 @@ const data = {
     "snowflake native apps provide the building blocks for app development distribution operation and monetization all within snowflakes platform",
     "snowpark allows users to easily process and derive insights from unstructured data from files such as images videos and audio python developers can easily take advantage of the python ecosystem of open source packages",
   ],
-
   database: [
+    // ... your database array ...
     "paxos is a family of protocols ensuring distributed agreement despite node failures it guarantees safety by requiring a majority quorum for proposals and commits making it robust but complex",
     "raft simplifies distributed consensus compared to paxos it uses leader election and replicated logs ensuring that all nodes agree on the sequence of operations in a fault tolerant manner",
     "bft mechanisms allow distributed systems to reach consensus even when some nodes exhibit arbitrary malicious behavior byzantine faults unlike protocols assuming only crash failures",
@@ -135,30 +138,47 @@ function getRandomInt(max: number) {
 
 function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const session = useSession();
+  const utils = api.useUtils();
 
-  const limitsQuery = api.limits.isAbovePdfLimit.useQuery(undefined, {
+  // 1. Fetch PDF limit status
+  const {
+    data: isAboveLimit,
+    isLoading: isLoadingLimit,
+    error: limitError,
+  } = api.limits.isAbovePdfLimit.useQuery(undefined, {
     enabled: !!session.data,
+    refetchOnWindowFocus: true,
   });
 
-  const maxedFreeTier = limitsQuery.data ?? false;
-  console.log("maxed free tier " + maxedFreeTier);
+  // 2. Define when the upload button should be truly disabled
+  const uploadShouldBeDisabled =
+    !session.data || // No session, no uploads
+    isLoadingLimit || // Still checking the limit
+    isAboveLimit === true || // Explicitly above limit (true means limit is hit)
+    !!limitError; // An error occurred fetching limit, safer to disable
 
-  const utils = api.useUtils();
+  const uploadButtonTooltipContent =
+    "Free users can upload up to 5 PDFs. Upgrade to Pro for up to 50 PDFs!";
+
+  // 3. PDF Upload Mutation
   const { mutate: addPdf, isPending: isPdfLoading } =
     api.pdfProcessor.add.useMutation({
+      onMutate: (variables) => {
+        toast.loading(`Uploading PDF: ${variables.filename}...`, {
+          id: "pdf-upload",
+        });
+      },
       onSuccess: (data) => {
         console.log("Successfully added PDF:", data);
         toast.success("PDF uploaded successfully!");
         void utils.pdfProcessor.get.invalidate();
-        void utils.limits.isAbovePdfLimit.invalidate();
+        void utils.limits.isAbovePdfLimit.invalidate(); // Refresh limit status
       },
       onError: (error) => {
         console.error("Error adding PDF:", error);
-        // Refresh limits data on error too
-        void utils.limits.isAbovePdfLimit.invalidate();
         toast.error(`Failed to upload PDF: ${error.message}`);
+        void utils.limits.isAbovePdfLimit.invalidate(); // Refresh limit status
       },
       onSettled: () => {
         toast.dismiss("pdf-upload");
@@ -184,16 +204,15 @@ function App() {
   };
 
   useEffect(() => {
-    if (!pdfsQuery.data) return;
+    if (!pdfsQuery.data || !selectedPdf) return; // Added check for selectedPdf
     const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
-    if (!pdf) return;
+    if (!pdf || !pdf.paragraphs || pdf.paragraphs.length === 0) return; // Added check for paragraphs
     const rand_para_id = getRandomInt(pdf.paragraphs.length);
     const rand_para = pdf.paragraphs[rand_para_id];
     if (!rand_para) return;
     setTarget(rand_para.text);
   }, [pdfsQuery.data, selectedPdf]);
 
-  // gameState would need input and target, I like it being in app as you can clearly see the gameState
   const gameState = useRecordStore((state) => state.status);
   const setGameState = useRecordStore((state) => state.setStatus);
   useGameStateMachine(input, target);
@@ -201,7 +220,6 @@ function App() {
   const boilerPlate = data.database[boilerplate];
 
   const resetGame = () => {
-    // If using PDF content directly, just reset the game
     setGameState("idle");
     setInput("");
     setTarget("");
@@ -211,7 +229,7 @@ function App() {
     } else {
       if (!pdfsQuery.data) return;
       const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
-      if (!pdf) return;
+      if (!pdf || !pdf.paragraphs || pdf.paragraphs.length === 0) return; // Added check
       const rand_para_id = getRandomInt(pdf.paragraphs.length);
       const rand_para = pdf.paragraphs[rand_para_id];
       if (!rand_para) return;
@@ -225,166 +243,180 @@ function App() {
     }
   };
 
-  // Handle file upload
-  // Trigger file input click
   const triggerFileUpload = () => {
+    if (uploadShouldBeDisabled || isPdfLoading) {
+      return;
+    }
     fileInputRef.current?.click();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("the file change is hit");
-    if (!e.target.files) return;
-    if (!e.target.files[0]) return;
-
-    const file = e.target.files[0];
-    const filename = file.name;
-
-    if (!file.type || file.type !== "application/pdf") {
-      toast.error("Needs to be a pdf");
+    if (uploadShouldBeDisabled) {
+      console.warn("handleFileChange: Upload attempt while disabled.");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
       return;
     }
 
-    toast.loading(`Uploading PDF: ${filename}`, { id: "pdf-upload" });
+    if (!e.target.files || e.target.files.length === 0) {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+    const file = e.target.files[0];
+    if (!file) return;
+    const filename = file.name;
+
+    if (!file.type || file.type !== "application/pdf") {
+      toast.error("Needs to be a PDF");
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = async (ev: ProgressEvent<FileReader>) => {
       const uri = ev.target?.result as string;
       if (!uri.startsWith("data:application/pdf;base64,")) {
-        toast.error("Needs to be a pdf (internal error should not get here)");
+        toast.error("Needs to be a PDF (internal error should not get here)");
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+        return;
       }
-      const data = uri.slice("data:application/pdf;base64,".length);
+      const base64Data = uri.slice("data:application/pdf;base64,".length);
 
       addPdf({
         filename: filename,
-        pdfBase64: data,
+        pdfBase64: base64Data,
       });
-
-      return ev.target?.result;
+    };
+    reader.onerror = () => {
+      console.error("FileReader error:", reader.error);
+      toast.error("Failed to read the file.");
+      toast.dismiss("pdf-upload"); // Dismiss loading toast if FileReader fails
     };
     reader.readAsDataURL(file);
-    fileInputRef.current = null;
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
-  // if its not loading and dat and data doesn't equal the text set and you're playing the game then don't set the target text
   useEffect(() => {
-    if (!boilerPlate) {
-      setTarget("hey there's an issue");
+    if (!boilerPlate && !selectedPdf) {
+      // Only set boilerplate if no PDF is selected
+      setTarget("Select a PDF or one will be chosen for you.");
       return;
     }
-    setTarget(boilerPlate);
-  }, [boilerPlate, setTarget]);
+    if (!selectedPdf && boilerPlate) {
+      // If no PDF selected, use boilerplate
+      setTarget(boilerPlate);
+    }
+  }, [boilerPlate, selectedPdf, setTarget]); // Added selectedPdf to dependencies
 
-  // on page load focus on the input box
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  // if the outer div is clicked focus on input
   const focus = () => {
     inputRef.current?.focus();
   };
-  // // fetch all records
 
   const isActive = (s: GameStatus) => {
     return s === "running" || s === "idle";
   };
 
-  // Add subscription handling function
   const handleSubscribeClick = async () => {
     try {
       toast.loading("Preparing subscription...", { id: "subscription" });
-
       const baseUrl = window.location.origin;
-      const successUrl = `${baseUrl}/dashboard?subscribed=true`;
+      const successUrl = `${baseUrl}/dashboard?subscribed=true`; // Or your success page
       const cancelUrl = `${baseUrl}`;
 
-      console.log("Initiating subscription upgrade with:", {
+      const result = await authClient.subscription.upgrade({
         plan: "pro",
         successUrl,
         cancelUrl,
       });
 
-      const result = await authClient.subscription.upgrade({
-        plan: "pro", // Using the pro plan we defined
-        successUrl,
-        cancelUrl,
-      });
-
-      console.log("Subscription upgrade response:", result);
-
       if (result.error) {
         console.error("Subscription failed:", result.error);
         toast.error(
           `Subscription failed: ${result.error.message ?? "Unknown error"}`,
-          {
-            id: "subscription",
-          },
+          { id: "subscription" },
         );
         return;
       }
-
       toast.success("Redirecting to payment...", { id: "subscription" });
-      // If successful, user will be redirected to Stripe
     } catch (err) {
       console.error("Subscription error:", err);
       toast.error(
         `Subscription error: ${err instanceof Error ? err.message : "Unknown error"}`,
-        {
-          id: "subscription",
-        },
+        { id: "subscription" },
       );
     }
   };
 
-  // Common button style
   return (
     <>
-      <Toaster
-        position="top-right" // Optional: configure position, etc.
-      />
-      {/* nav bar */}
-      <div className="m-4 flex">
+      <Toaster position="top-right" />
+      <div className="m-4 flex items-center space-x-4">
         <AuthStatus />
         {session.data && (
           <>
-            {maxedFreeTier ? (
+            {uploadShouldBeDisabled ? (
               <>
                 <button
                   data-tooltip-id="upload-limit-tooltip"
-                  data-tooltip-content="Free users can upload up to 5 PDFs. Upgrade to Pro for up to 50 PDFs!"
-                  className={"text-s font-mono text-gray-500 transition-colors"}
+                  data-tooltip-content={uploadButtonTooltipContent}
+                  className={
+                    "text-s cursor-not-allowed font-mono text-gray-500 transition-colors"
+                  }
+                  aria-disabled="true"
                 >
                   upload pdf
                 </button>
+                {/* You can style the Tooltip component directly or use CSS classes */}
                 <Tooltip
                   id="upload-limit-tooltip"
                   place="bottom"
                   style={{
-                    backgroundColor: "#333",
-                    color: "gray",
+                    backgroundColor: "rgb(55 65 81)", // Tailwind gray-700
+                    color: "white",
                     maxWidth: "250px",
+                    fontSize: "0.875rem", // text-sm
+                    padding: "0.5rem", // p-2
+                    borderRadius: "0.375rem", // rounded-md
                     textAlign: "center",
+                    zIndex: 50, // Ensure tooltip is on top
                   }}
                 />
               </>
             ) : (
-              <>
-                <button
-                  className={
-                    "text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
-                  }
-                  onClick={triggerFileUpload}
-                >
-                  upload pdf
-                </button>
-              </>
+              <button
+                className={`text-s font-mono text-gray-300 transition-colors hover:text-gray-500 ${
+                  isPdfLoading ? "cursor-wait opacity-70" : ""
+                }`}
+                onClick={triggerFileUpload}
+                disabled={isPdfLoading || isLoadingLimit} // Also disable if limit is still loading
+              >
+                {isPdfLoading
+                  ? "Uploading..."
+                  : isLoadingLimit
+                    ? "Checking..."
+                    : "upload pdf"}
+              </button>
             )}
+
             <PdfDrawer selectPdf={selectPdf} />
 
-            {/* Add subscription button */}
             <button
-              className="text-s ml-4 font-mono text-gray-300 transition-colors hover:text-gray-500"
+              className="text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
               onClick={() => void handleSubscribeClick()}
             >
               go pro
@@ -400,11 +432,12 @@ function App() {
           className="hidden"
         />
         <input
-          className="opacity-0"
+          className="absolute -left-full h-0 w-0 opacity-0" // Effectively hide for focus only
           type="text"
           value={input}
           ref={inputRef}
           onChange={handleInput}
+          aria-hidden="true"
         />
       </div>
 

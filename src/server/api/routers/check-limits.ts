@@ -13,9 +13,7 @@ export const limits = createTRPCRouter({
       },
     });
 
-    console.log(userSubscriptions);
-
-    const pdfLimit = userSubscriptions ? 50 : 5;
+    const pdfLimit = userSubscriptions.length > 0 ? 50 : 5;
 
     const pdfCount = await ctx.db.pdf.count({
       where: {
