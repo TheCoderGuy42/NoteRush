@@ -26,6 +26,21 @@ export default function RecordList({ resetGame }: RecordListProps) {
       <p className="py-4 text-center text-sm text-gray-500">No data yet.</p>
     );
   }
+  let totalWpm = 0;
+  let totalTime = 0;
+  let totalMistakes = 0;
+  let totalAccuracy = 0;
+  data.map(({ wpm, time, mistakes, accuracy }) => {
+    totalWpm += wpm;
+    totalTime += time;
+    totalMistakes += mistakes;
+    totalAccuracy += accuracy;
+  });
+
+  const avgWPM = totalWpm / data.length;
+  const avgTime = totalTime / data.length;
+  const avgMistakes = totalMistakes / data.length;
+  const avgAccuracy = totalAccuracy / data.length;
 
   return (
     <section className="mx-auto w-[23rem]">

@@ -410,7 +410,7 @@ function App() {
                   data-tooltip-id="upload-limit-tooltip"
                   data-tooltip-content={uploadButtonTooltipContent}
                   className={
-                    "text-s cursor-not-allowed font-mono text-gray-500 transition-colors"
+                    "text-s cursor-not-allowed cursor-pointer font-mono text-gray-500 transition-colors"
                   }
                   aria-disabled="true"
                 >
@@ -448,14 +448,14 @@ function App() {
 
             {hasActiveSubscription ? (
               <button
-                className="text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
+                className="text-s cursor-pointer font-mono text-gray-300 transition-colors hover:text-gray-500"
                 onClick={() => void handleCancelSubscription()}
               >
                 cancel subscription
               </button>
             ) : (
               <button
-                className="text-s font-mono text-gray-300 transition-colors hover:text-gray-500"
+                className="text-s cursor-pointer font-mono text-gray-300 transition-colors hover:text-gray-500"
                 onClick={() => void handleSubscribeClick()}
               >
                 go pro

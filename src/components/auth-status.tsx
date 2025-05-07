@@ -14,7 +14,7 @@ export default function AuthStatus() {
       {!session.data && (
         <>
           <button
-            className="text-s mr-5 font-mono text-gray-300 transition-colors hover:text-gray-500"
+            className="text-s mr-5 cursor-pointer font-mono text-gray-300 transition-colors hover:text-gray-500"
             onClick={() => {
               goToSignIn();
             }}
@@ -25,16 +25,14 @@ export default function AuthStatus() {
       )}
       {session.data && (
         <>
-          <div className="text-s mr-5 font-mono text-gray-300 transition-colors hover:text-gray-500">
-            <button
-              className="text-sfont-mono text-gray-300 transition-colors hover:text-gray-500"
-              onClick={() => {
-                void signOut();
-              }}
-            >
-              sign out
-            </button>
-          </div>
+          <button
+            className="text-s mr-5 cursor-pointer font-mono text-gray-300 transition-colors hover:text-gray-500"
+            onClick={() => {
+              void signOut();
+            }}
+          >
+            sign out
+          </button>
         </>
       )}
     </>
