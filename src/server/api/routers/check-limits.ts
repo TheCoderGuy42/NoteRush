@@ -13,7 +13,7 @@ export const limits = createTRPCRouter({
       },
     });
 
-    console.log("user subscription " + userSubscriptions.toString());
+    console.log(userSubscriptions);
 
     const pdfLimit = userSubscriptions ? 50 : 5;
 
