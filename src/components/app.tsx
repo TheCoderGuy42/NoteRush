@@ -436,7 +436,7 @@ function App() {
               </>
             ) : (
               <button
-                className={`text-s font-mono text-gray-300 transition-colors hover:text-gray-500 ${
+                className={`text-s cursor-pointer font-mono text-gray-300 transition-colors hover:text-gray-500 ${
                   isPdfLoading ? "cursor-wait opacity-70" : ""
                 }`}
                 onClick={triggerFileUpload}
