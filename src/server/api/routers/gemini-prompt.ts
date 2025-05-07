@@ -59,7 +59,7 @@ Instructions:
 7.  **Format Output:** Return a list of the cleaned, information-dense **textual snippets** that meet all criteria. Format the output as a JSON list of strings. Provide **ideally 20 snippets**, unless there's not enough suitable information to meet the quality and quantity criteria. If fewer high-quality snippets are found, provide those.
 
 Example of bad output to avoid (too conversational, not informative enough, incomplete, or just describing an image without extracting a concept/fact):
-"high data volume: we’re talking billions of images or millions of customer interactions" (Too conversational for this specific style)
+"high data volume: we're talking billions of images or millions of customer interactions" (Too conversational for this specific style)
 "the image displays a complex network of interconnected nodes with arrows indicating data flow" (Just describes, doesn't provide a conceptual takeaway)
 "turtles sometimes eat blueberries" (Not dense enough, lacks the "why" or "effect" that your example had)
 
@@ -104,47 +104,51 @@ export const aiService = {
       text: prompt,
     };
 
-    const result = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: [{ role: "user", parts: [textPart, pdfPart] }],
-      config: {
-        responseSchema: paragraphListSchema,
-        responseMimeType: "application/json",
-      },
-    });
+    console.log("Making Gemini API call...");
+    try {
+      const result = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: [{ role: "user", parts: [textPart, pdfPart] }],
+        config: {
+          responseSchema: paragraphListSchema,
+          responseMimeType: "application/json",
+        },
+      });
 
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: `oki so whats da result ${result.text}`,
-    });
+      console.log("Raw Gemini response:", result);
+      const response = result.text;
+      console.log("Response text:", response);
 
-    const response = result.text;
-    if (!response) {
-      console.warn("Empty response from Gemini API");
+      if (!response) {
+        console.warn("Empty response from Gemini API");
+        return fallbackParagraphs;
+      }
+
+      try {
+        console.log("Attempting to parse JSON response...");
+        const parsed_result = JSON.parse(response) as string[];
+        console.log("Parsed result:", parsed_result);
+
+        if (
+          !Array.isArray(parsed_result) ||
+          !parsed_result.every((item) => typeof item === "string") ||
+          parsed_result.length === 0
+        ) {
+          console.error(
+            "Invalid response format from Gemini API:",
+            parsed_result,
+          );
+          return fallbackParagraphs;
+        }
+
+        return parsed_result;
+      } catch (parseError: unknown) {
+        console.error("Error parsing Gemini response:", parseError);
+        return fallbackParagraphs;
+      }
+    } catch (apiError: unknown) {
+      console.error("Gemini API call failed:", apiError);
       return fallbackParagraphs;
     }
-    // try {
-    //   const parsed_result = JSON.parse(response) as string[];
-
-    //   if (
-    //     !Array.isArray(parsed_result) ||
-    //     !parsed_result.every((item) => typeof item === "string") ||
-    //     parsed_result.length === 0
-    //   ) {
-    //     console.error(
-    //       "Invalid response format from Gemini API:",
-    //       parsed_result,
-    //     );
-    //     return fallbackParagraphs;
-    //   }
-
-    //   return parsed_result;
-    // } catch (parseError: unknown) {
-    //   throw new TRPCError({
-    //     code: "INTERNAL_SERVER_ERROR",
-    //     message: `Some error : ${parseError}...`,
-    //   });
-    //   return fallbackParagraphs;
-    // }
   },
 };
