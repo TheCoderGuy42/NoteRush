@@ -18,7 +18,7 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
 
   return (
-    <Card className="mx-auto max-w-md">
+    <Card className="mx-auto my-auto max-w-md">
       <CardHeader className="text-center">
         <CardTitle className="text-lg md:text-xl">Sign In</CardTitle>
         <CardDescription className="text-xs md:text-sm">
