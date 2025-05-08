@@ -79,7 +79,7 @@ export default function RecordList({ resetGame }: RecordListProps) {
           </ul>
         </section>
 
-        <div className="mt-6 w-full max-w-[23rem] flex-col gap-2 rounded-lg font-mono text-sm md:absolute md:top-0 md:left-full md:mt-0 md:ml-8 md:w-64 md:max-w-none dark:border-zinc-700 dark:bg-zinc-900 dark:text-gray-200">
+        <div className="mt-6 w-full max-w-[23rem] flex-col gap-2 rounded-lg font-mono text-sm md:absolute md:top-0 md:left-full md:mt-0 md:ml-8 md:w-64 md:max-w-none">
           <h3 className="mb-2 font-mono text-base text-gray-900 dark:text-gray-100">
             averages
           </h3>
