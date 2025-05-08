@@ -31,7 +31,7 @@ function useRenderer(
       if (char === input[index]) {
         color = "text-emerald-600";
       } else {
-        color = "text-red-500 bg-red-100";
+        color = "text-red-500 bg-red-100 dark:bg-gray-100";
         mistakes++;
       }
     }
