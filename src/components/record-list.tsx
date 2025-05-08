@@ -45,17 +45,11 @@ export default function RecordList({ resetGame }: RecordListProps) {
   const avgAccuracy = totalAccuracy / data.length;
 
   return (
-    // This outer div helps in structuring, but centering is handled by mx-auto on the record list container
     <div className="w-full py-4">
       {" "}
-      {/* Added padding for overall spacing */}
-      {/* Container for the record list, this is what gets centered */}
-      {/* On md screens, 'relative' is crucial for positioning the absolute summary card */}
       <div className="relative mx-auto w-[23rem]">
-        {/* Main Record List Section */}
         <section className="w-full">
           {" "}
-          {/* w-full to take width of its parent w-[23rem] */}
           <div className="flex justify-center">
             <button
               onClick={resetGame}

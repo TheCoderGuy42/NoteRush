@@ -152,8 +152,6 @@ export default function StatusBar({
         mistakesRef.current.textContent = "0";
       }
     }
-
-    // ideally no return, as when you complete the game it immediately needs to swap to another screen, so it doesn't capture the last input
   }, [gameState, mutate, setTime, setAccuracy, setMistakes, setWPM]);
 
   return (

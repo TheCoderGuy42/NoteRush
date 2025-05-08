@@ -15,9 +15,7 @@ import HelpButton from "./help-button";
 import { TRPCError } from "node_modules/@trpc/server/dist/@trpc/server";
 
 const data = {
-  // Keep your data object as is
   paragraphsnow: [
-    // ... your paragraphsnow array ...
     "snowflake enables every organization to mobilize their data with snowflakes data cloud customers use the data cloud to unite siloed data discover and securely share data power data applications and execute diverse aiml and analytic workloads",
     "wherever data or users live snowflake delivers a single data experience that spans multiple clouds and geographies thousands of customers across many industries including 647 of the 2023 forbes global 2000 g2k use snowflake data cloud to power their businesses",
     "these applications are not only transforming the way we interact with technology but also reshaping various sectors of society theyre harnessing the power of vast amounts of data and leveraging advanced artificial intelligence ai algorithms",
@@ -50,7 +48,6 @@ const data = {
     "snowpark allows users to easily process and derive insights from unstructured data from files such as images videos and audio python developers can easily take advantage of the python ecosystem of open source packages",
   ],
   database: [
-    // ... your database array ...
     "paxos is a family of protocols ensuring distributed agreement despite node failures it guarantees safety by requiring a majority quorum for proposals and commits making it robust but complex",
     "raft simplifies distributed consensus compared to paxos it uses leader election and replicated logs ensuring that all nodes agree on the sequence of operations in a fault tolerant manner",
     "bft mechanisms allow distributed systems to reach consensus even when some nodes exhibit arbitrary malicious behavior byzantine faults unlike protocols assuming only crash failures",
@@ -143,7 +140,6 @@ function App() {
   const session = useSession();
   const utils = api.useUtils();
 
-  // 1. Fetch PDF limit status
   const {
     data: isAboveLimit,
     isLoading: isLoadingLimit,
@@ -159,7 +155,6 @@ function App() {
       refetchOnWindowFocus: true,
     });
 
-  // 2. Define when the upload button should be truly disabled
   const uploadShouldBeDisabled =
     !session.data || // No session, no uploads
     isLoadingLimit || // Still checking the limit
@@ -169,7 +164,6 @@ function App() {
   const uploadButtonTooltipContent =
     "Free users can upload up to 5 PDFs. Upgrade to Pro for up to 50 PDFs!";
 
-  // 3. PDF Upload Mutation
   const { mutate: addPdf, isPending: isPdfLoading } =
     api.pdfProcessor.add.useMutation({
       onMutate: (variables) => {
@@ -181,12 +175,12 @@ function App() {
         console.log("Successfully added PDF:", data);
         toast.success("PDF uploaded successfully!");
         void utils.pdfProcessor.get.invalidate();
-        void utils.limits.isAbovePdfLimit.invalidate(); // Refresh limit status
+        void utils.limits.isAbovePdfLimit.invalidate(); // refresh limit status
       },
       onError: (error) => {
         console.error("Error adding PDF:", error);
         toast.error(`Failed to upload PDF: ${error.message}`);
-        void utils.limits.isAbovePdfLimit.invalidate(); // Refresh limit status
+        void utils.limits.isAbovePdfLimit.invalidate(); // refresh limit status
       },
       onSettled: () => {
         toast.dismiss("pdf-upload");
@@ -213,9 +207,9 @@ function App() {
   };
 
   useEffect(() => {
-    if (!pdfsQuery.data || !selectedPdf) return; // Added check for selectedPdf
+    if (!pdfsQuery.data || !selectedPdf) return; // check for selectedPdf
     const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
-    if (!pdf || !pdf.paragraphs || pdf.paragraphs.length === 0) return; // Added check for paragraphs
+    if (!pdf || !pdf.paragraphs || pdf.paragraphs.length === 0) return; // check for paragraphs
     const rand_para_id = getRandomInt(pdf.paragraphs.length);
     const rand_para = pdf.paragraphs[rand_para_id];
     if (!rand_para) return;
@@ -238,7 +232,7 @@ function App() {
     } else {
       if (!pdfsQuery.data) return;
       const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
-      if (!pdf || !pdf.paragraphs || pdf.paragraphs.length === 0) return; // Added check
+      if (!pdf || !pdf.paragraphs || pdf.paragraphs.length === 0) return;
       const rand_para_id = getRandomInt(pdf.paragraphs.length);
       const rand_para = pdf.paragraphs[rand_para_id];
       if (!rand_para) return;
@@ -306,7 +300,7 @@ function App() {
     reader.onerror = () => {
       console.error("FileReader error:", reader.error);
       toast.error("Failed to read the file.");
-      toast.dismiss("pdf-upload"); // Dismiss loading toast if FileReader fails
+      toast.dismiss("pdf-upload");
     };
     reader.readAsDataURL(file);
 
@@ -317,15 +311,13 @@ function App() {
 
   useEffect(() => {
     if (!boilerPlate && !selectedPdf) {
-      // Only set boilerplate if no PDF is selected
       setTarget("Select a PDF or one will be chosen for you.");
       return;
     }
     if (!selectedPdf && boilerPlate) {
-      // If no PDF selected, use boilerplate
       setTarget(boilerPlate);
     }
-  }, [boilerPlate, selectedPdf, setTarget]); // Added selectedPdf to dependencies
+  }, [boilerPlate, selectedPdf, setTarget]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -418,12 +410,11 @@ function App() {
                 >
                   upload pdf
                 </button>
-                {/* You can style the Tooltip component directly or use CSS classes */}
                 <Tooltip
                   id="upload-limit-tooltip"
                   place="bottom"
                   style={{
-                    backgroundColor: "rgb(55 65 81)", // Tailwind gray-700
+                    backgroundColor: "rgb(55 65 81)",
                     color: "white",
                     maxWidth: "250px",
                     fontSize: "0.875rem", // text-sm
@@ -440,7 +431,7 @@ function App() {
                   isPdfLoading ? "cursor-wait opacity-70" : ""
                 }`}
                 onClick={triggerFileUpload}
-                disabled={isPdfLoading || isLoadingLimit} // Also disable if limit is still loading
+                disabled={isPdfLoading || isLoadingLimit}
               >
                 {isPdfLoading ? "uploading..." : "upload pdf"}
               </button>
@@ -482,7 +473,7 @@ function App() {
           className="hidden"
         />
         <input
-          className="absolute -left-full h-0 w-0 opacity-0" // Effectively hide for focus only
+          className="absolute -left-full h-0 w-0 opacity-0"
           type="text"
           value={input}
           ref={inputRef}

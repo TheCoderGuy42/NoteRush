@@ -28,9 +28,7 @@ export default function PdfDrawer({ selectPdf }: PdfDrawerProps) {
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 z-40 bg-black/40" />
 
-        <Drawer.Content
-          className="fixed top-0 right-0 bottom-0 z-50 mt-0 flex h-full w-[85%] max-w-sm flex-col rounded-l-[10px] border-l bg-white outline-none sm:w-[400px] dark:border-zinc-800 dark:bg-zinc-900" // Adjusted styles
-        >
+        <Drawer.Content className="fixed top-0 right-0 bottom-0 z-50 mt-0 flex h-full w-[85%] max-w-sm flex-col rounded-l-[10px] border-l bg-white outline-none sm:w-[400px] dark:border-zinc-800 dark:bg-zinc-900">
           <div className="sticky top-0 flex items-center justify-between border-b bg-inherit p-4 dark:border-zinc-800">
             <Drawer.Title className="font-medium text-zinc-900 dark:text-zinc-100">
               My PDFs
@@ -59,12 +57,10 @@ export default function PdfDrawer({ selectPdf }: PdfDrawerProps) {
                     key={id}
                     className={clsx(
                       "cursor-pointer rounded-md border p-3 text-sm transition-colors",
-                      // Base text/border colors
                       "text-zinc-800 dark:border-zinc-700 dark:text-zinc-200",
-                      // Conditional background and hover states
                       isSelected === id
-                        ? "bg-green-100 dark:bg-green-700" // Selected state background
-                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800", // Non-selected hover
+                        ? "bg-green-100 dark:bg-green-700"
+                        : "hover:bg-zinc-100 dark:hover:bg-zinc-800",
                     )}
                     onClick={() => {
                       selectPdf(id);

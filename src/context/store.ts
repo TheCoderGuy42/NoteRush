@@ -1,5 +1,5 @@
 import { create } from "zustand";
-export type GameStatus = "idle" | "running" | "stopped"; // Renamed for clarity
+export type GameStatus = "idle" | "running" | "stopped";
 
 interface RecordState {
   wpm: number;
@@ -14,9 +14,7 @@ interface RecordState {
   setStatus: (status: GameStatus) => void;
 }
 
-// Create the store
 export const useRecordStore = create<RecordState>((set) => ({
-  // Initial state
   wpm: 0,
   time: 0,
   mistakes: 0,
