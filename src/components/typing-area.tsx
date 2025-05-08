@@ -29,9 +29,9 @@ function useRenderer(
 
     if (index < input.length) {
       if (char === input[index]) {
-        color = "text-emerald-600";
+        color = "text-emerald-600 dark:text-emerald-400";
       } else {
-        color = "text-red-500 bg-red-100 dark:bg-gray-100";
+        color = "text-red-500 bg-red-100 dark:text-red-400 dark:bg-red-900/30";
         mistakes++;
       }
     }
@@ -82,7 +82,7 @@ function TypingArea(props: TypingAreaInt) {
       return;
     }
 
-    // 4. compute offset so the cursor’s line sits at the top of the second line slot
+    // 4. compute offset so the cursor's line sits at the top of the second line slot
     const desiredOffset = lineHeight - cursorTop;
 
     if (desiredOffset !== scrollOffset) {
