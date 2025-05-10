@@ -1,8 +1,4 @@
-import {
-  createCallerFactory,
-  createTRPCRouter,
-  publicProcedure,
-} from "@/server/api/trpc";
+import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { typingEntry } from "@/server/api/routers/typing-entry";
 import { pdfProcessor } from "./routers/pdf-processor";
 import { limits } from "./routers/check-limits";

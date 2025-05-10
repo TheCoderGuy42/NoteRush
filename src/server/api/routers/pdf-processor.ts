@@ -5,8 +5,6 @@ import { aiService } from "./gemini-prompt";
 import { s3Client } from "./s3";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
 
-const MAX_PDF_SIZE_BYTES = 4 * 1024 * 1024; // 10 MB
-
 async function getFileAsBuffer(key: string) {
   const getObjectParams = {
     Bucket: process.env.AWS_S3_BUCKET_NAME,

@@ -1,7 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
 import type { Schema, Part } from "@google/genai";
-import { TRPCError } from "@trpc/server";
 
 const prompt = `You are an AI assistant tasked with preparing text excerpts for a typing racer game. The input is a **PDF document**, which may contain a mix of text, diagrams, images, and other visual elements. This document is likely personal notes, articles, or informational content focused on technical or academic subjects. The goal is to extract or synthesize **short, highly information-dense, self-contained textual statements** that present key concepts, factual information, or significant observations, suitable for typing practice.
 

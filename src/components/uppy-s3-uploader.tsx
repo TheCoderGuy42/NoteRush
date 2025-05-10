@@ -80,8 +80,8 @@ function UppyS3Uploader({
         },
       } as any);
 
-      uppy.on("upload-success", (file, response) => {
-        if (!file || !file.name) return;
+      uppy.on("upload-success", (file) => {
+        if (!file?.name) return;
         const s3Key = file.meta.s3Key as string;
 
         if (!s3Key) {
