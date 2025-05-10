@@ -6,6 +6,7 @@ import {
 import { typingEntry } from "@/server/api/routers/typing-entry";
 import { pdfProcessor } from "./routers/pdf-processor";
 import { limits } from "./routers/check-limits";
+import { s3Upload } from "./routers/s3";
 
 /**
  * This is the primary router for your server.
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   typingEntry: typingEntry,
   pdfProcessor: pdfProcessor,
   limits: limits,
+  s3Upload: s3Upload,
 });
 
 // export type definition of API
