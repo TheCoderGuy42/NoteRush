@@ -2,7 +2,7 @@ import { useSession } from "@/server/auth/react-client";
 import { useRouter } from "next/navigation";
 import { signOut } from "@/server/auth/react-client";
 
-export default function AuthStatus() {
+export default function AuthButton() {
   const router = useRouter(); // used by the auth only, let's think about how to host different users pdfs
   function goToSignIn() {
     router.push("/signin");

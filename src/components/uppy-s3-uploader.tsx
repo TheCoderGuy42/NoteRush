@@ -1,137 +1,138 @@
+// components/UppyS3Uploader.tsx
 "use client";
 
-import { useRef, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import Uppy, { type UppyFile, type Meta, type Body } from "@uppy/core";
-import DashboardPlugin from "@uppy/dashboard";
 import AwsS3 from "@uppy/aws-s3";
-import { api } from "@/trpc/react";
-import toast, { Toaster } from "react-hot-toast";
-import { Dashboard as UppyReactDashboard } from "@uppy/react"; // Import the React component
+import { Dashboard as UppyReactDashboard } from "@uppy/react";
+import { api } from "@/trpc/react"; // Only for getPresignedUrlAsync
+import toast from "react-hot-toast";
 
-function UppyS3Uploader() {
+// Import Uppy's CSS
+import "@uppy/core/dist/style.min.css";
+import "@uppy/dashboard/dist/style.min.css";
+
+interface UppyS3UploaderProps {
+  // Callback when a file is successfully uploaded to S3
+  onS3UploadSuccess: (data: { filename: string; s3Key: string }) => void;
+  // Callback for when Uppy's 'complete' event fires (all files processed by Uppy)
+  onUppyDone: () => void;
+}
+
+function UppyS3Uploader({
+  onS3UploadSuccess,
+  onUppyDone,
+}: UppyS3UploaderProps) {
   const uppyRef = useRef<Uppy | null>(null);
 
+  // Only this mutation is needed here now
   const { mutateAsync: getPresignedUrlAsync } =
     api.s3Upload.getPresignedUrl.useMutation();
 
-  const { mutate: addAndProcessFile } = api.pdfProcessor.add.useMutation();
-
   useEffect(() => {
+    let uppyInstanceToCleanUp: Uppy | null = null;
+
     if (!uppyRef.current) {
       const uppy = new Uppy({
-        autoProceed: false,
-        debug: true,
+        autoProceed: true, // Consider autoProceed true if modal is just for Uppy
+        debug: process.env.NODE_ENV === "development",
         restrictions: {
-          maxFileSize: 10 * 1024 * 1024,
+          maxFileSize: 10 * 1024 * 1024, // 10MB
+          maxNumberOfFiles: 1, // If you only want one PDF at a time for processing
         },
       });
-      uppyRef.current = uppy;
-    }
 
-    uppyRef.current.use(AwsS3, {
-      getUploadParameters: async (file: UppyFile<Meta, Body>) => {
-        if (!file.name || !file.type) {
+      uppy.use(AwsS3, {
+        getUploadParameters: async (file: UppyFile<Meta, Body>) => {
+          if (!file.name || !file.type) {
+            toast.error("File name or type missing.");
+            throw new Error("File name or type missing.");
+          }
+          try {
+            const result = await getPresignedUrlAsync({
+              filename: file.name,
+              contentType: file.type,
+            });
+
+            if (!result || !result.signedUrl) {
+              throw new Error("Invalid pre-signed URL response.");
+            }
+            if (result.key) {
+              uppy.setFileMeta(file.id, { s3Key: result.key });
+            }
+            return {
+              method: result.method || "PUT",
+              url: result.signedUrl,
+              headers: result.headers || { "Content-Type": file.type },
+              fields: result.fields || {},
+            };
+          } catch (error) {
+            const message =
+              error instanceof Error
+                ? error.message
+                : "Failed to get upload URL";
+            toast.error(message);
+            console.error("getUploadParameters error:", error);
+            throw error;
+          }
+        },
+      } as any);
+
+      uppy.on("upload-success", (file, response) => {
+        if (!file || !file.name) return;
+        const s3Key = file.meta.s3Key as string;
+
+        if (!s3Key) {
+          toast.error(
+            `S3 key missing for ${file.name}. Cannot proceed with processing.`,
+          );
+          console.error("S3 key missing in file.meta for upload-success", file);
           return;
         }
-
-        const result = await getPresignedUrlAsync({
-          filename: file.name,
-          contentType: file.type,
-        });
-
-        if (result.key) {
-          uppyRef.current?.setFileMeta(file.id, { s3Key: result.key });
-        }
-
-        return {
-          method: result.method,
-          url: result.signedUrl,
-          headers: result.headers,
-          fields: result.fields,
-        };
-      },
-    } as any);
-
-    uppyRef.current.on("upload-success", (file, response) => {
-      if (!file || !file.name) return;
-
-      const s3Key = file.meta.s3Key as string;
-
-      if (!s3Key) {
-        toast.error(`Could not upload as the s3Key was missing`);
-        return;
-      }
-
-      addAndProcessFile({
-        filename: file?.name,
-        s3Key: s3Key,
+        // Call the prop to trigger backend processing in App.tsx
+        onS3UploadSuccess({ filename: file.name, s3Key });
+        toast.success(`"${file.name}" uploaded to S3. Processing will start.`);
       });
-    });
-  }, [getPresignedUrlAsync, addAndProcessFile]);
+
+      uppy.on("upload-error", (file, error, response) => {
+        toast.error(
+          `S3 Upload Error for ${file?.name || "file"}: ${error.message}`,
+        );
+        console.error("Uppy S3 Upload Error:", { file, error, response });
+      });
+
+      uppy.on("complete", (result) => {
+        console.log("Uppy batch complete:", result);
+        // Call onUppyDone to allow parent to close modal or perform other actions
+        if (onUppyDone) {
+          onUppyDone();
+        }
+      });
+
+      uppyRef.current = uppy;
+      uppyInstanceToCleanUp = uppy;
+    }
+
+    return () => {
+      if (uppyInstanceToCleanUp) {
+        uppyInstanceToCleanUp.clear();
+      }
+    };
+  }, [getPresignedUrlAsync, onS3UploadSuccess, onUppyDone]);
 
   if (!uppyRef.current) {
-    toast.error("uppy instance not created");
-    return;
+    return <p>Loading Uploader...</p>;
   }
 
   return (
-    <>
-      <Toaster />
-      <UppyReactDashboard uppy={uppyRef.current} />;
-    </>
+    // Toaster should ideally be at a higher level in App.tsx or _app.tsx
+    <UppyReactDashboard
+      uppy={uppyRef.current}
+      proudlyDisplayPoweredByUppy={false} // Your choice
+      // You might want to hide the "Done" button if onUppyDone handles modal closing
+      // or configure what happens when Uppy's internal "Done" is clicked.
+    />
   );
-
-  // const uppyRef = useRef<Uppy | null>(null);
-  // const { mutateAsync: getPresignedUrl } =
-  //   api.s3Upload.getPresignedUrl.useMutation();
-
-  // useEffect(() => {
-  //   if (!uppyRef.current) {
-  //     uppyRef.current = new Uppy({
-  //       autoProceed: false,
-  //       debug: true,
-  //       restrictions: {
-  //         maxFileSize: 10 * 1024 * 1024, // 10MB
-  //       },
-  //     });
-
-  //     uppyRef.current.use(AwsS3, {
-  //       getUploadParameters: async (file: UppyFile<Meta, Body>) => {
-  //         if (!file.name || !file.type) {
-  //           toast.error("uppy aint workin");
-  //           return;
-  //         }
-
-  //         const { signedUrl } = await getPresignedUrl({
-  //           filename: file.name,
-  //           contentType: file.type,
-  //         });
-
-  //         return {
-  //           method: "PUT",
-  //           url: signedUrl,
-  //         };
-  //       },
-  //     } as any);
-  //   }
-
-  //   return () => {
-  //     if (uppyRef.current) {
-  //       uppyRef.current.cancelAll();
-  //     }
-  //   };
-  // }, [getPresignedUrl]);
-
-  // if (!uppyRef.current) {
-  //   return <p>Loading Uploader...</p>; // Or some loading state
-  // }
-
-  // return (
-  //   <div>
-  //     <UppyReactDashboard uppy={uppyRef.current} height={400} />
-  //     <Toaster />
-  //   </div>
-  // );
 }
 
 export default UppyS3Uploader;

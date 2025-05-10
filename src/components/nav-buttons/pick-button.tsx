@@ -10,7 +10,7 @@ interface PdfDrawerProps {
   selectPdf: (pdfId: number) => void;
 }
 
-export default function PdfDrawer({ selectPdf }: PdfDrawerProps) {
+export default function PickButton({ selectPdf }: PdfDrawerProps) {
   const pdfsQuery = api.pdfProcessor.get.useQuery(undefined, {
     staleTime: 5 * 60 * 1000,
   });
