@@ -2,116 +2,81 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { aiService } from "./gemini-prompt";
+import { s3Client } from "./s3";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
 
 const MAX_PDF_SIZE_BYTES = 4 * 1024 * 1024; // 10 MB
+
+async function getFileAsBuffer(key: string) {
+  const getObjectParams = {
+    Bucket: process.env.AWS_S3_BUCKET_NAME,
+    Key: key,
+  };
+
+  const command = new GetObjectCommand(getObjectParams);
+
+  const s3Object = await s3Client.send(command);
+
+  if (s3Object.Body) {
+    const byteArray = await s3Object.Body.transformToByteArray(); // Get raw bytes
+    return Buffer.from(byteArray).toString("base64");
+  }
+
+  return undefined;
+}
 
 export const pdfProcessor = createTRPCRouter({
   add: protectedProcedure
     .input(
       z.object({
-        pdfBase64: z.string(),
+        s3Key: z.string(),
         filename: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      try {
-        const userId = ctx.session?.user.id;
+      const userId = ctx.session?.user.id;
 
-        if (!userId) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: "You have to be logged in to upload and process PDFs.",
-          });
-        }
+      const base64Encoding = await getFileAsBuffer(input.s3Key);
 
-        // check if user has a Pro subscription
-        const userSubscription = await ctx.db.subscription.findFirst({
-          where: {
-            referenceId: userId,
-            plan: "pro",
-            status: "active",
-          },
-        });
-
-        const pdfLimit = userSubscription ? 50 : 5;
-
-        const userPdfCount = await ctx.db.pdf.count({
-          where: {
-            userId: userId,
-          },
-        });
-
-        if (userPdfCount >= pdfLimit) {
-          throw new TRPCError({
-            code: "UNAUTHORIZED",
-            message: userSubscription
-              ? `Pro users can upload up to ${pdfLimit} PDFs`
-              : `Free users can upload up to ${pdfLimit} PDFs. Upgrade to Pro for up to 50 PDFs!`,
-          });
-        }
-
-        let pdfBinary: Buffer;
-        try {
-          pdfBinary = Buffer.from(input.pdfBase64, "base64");
-        } catch (error) {
-          console.error("PDF parsing error:", error);
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message:
-              "Failed to parse the PDF file. Please try a different file.",
-          });
-        }
-
-        if (pdfBinary.length > MAX_PDF_SIZE_BYTES) {
-          throw new TRPCError({
-            code: "PAYLOAD_TOO_LARGE",
-            message: `The PDF file '${input.filename}' is too large. Maximum size is ${MAX_PDF_SIZE_BYTES / (1024 * 1024)}MB.`,
-          });
-        }
-
-        let paragraphs;
-        try {
-          paragraphs = await aiService.generateContent(input.pdfBase64);
-        } catch (error) {
-          console.error("AI processing error:", error);
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message:
-              "Failed to process the PDF with AI. Please try again later.",
-          });
-        }
-
-        if (!paragraphs || paragraphs.length === 0) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "No suitable paragraphs found by AI.",
-          });
-        }
-
-        const newPdf = await ctx.db.pdf.create({
-          data: {
-            userId: userId,
-            paragraphs: {
-              createMany: {
-                data: paragraphs.map((paragraphText) => ({
-                  text: paragraphText,
-                })),
-              },
-            },
-            title: input.filename,
-          },
-        });
-        return newPdf;
-      } catch (error) {
-        console.error("PDF processing error:", error);
-        if (error instanceof TRPCError) {
-          throw error;
-        }
+      if (!base64Encoding) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "An unexpected error occurred while processing your PDF.",
+          message: "Failed to pull file from S3.",
         });
       }
+
+      let paragraphs;
+      try {
+        paragraphs = await aiService.generateContent(base64Encoding);
+      } catch (error) {
+        console.error("AI processing error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to process the PDF with AI. Please try again later.",
+        });
+      }
+
+      if (!paragraphs || paragraphs.length === 0) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "No suitable paragraphs found by AI.",
+        });
+      }
+
+      const newPdf = await ctx.db.pdf.create({
+        data: {
+          userId: userId,
+          paragraphs: {
+            createMany: {
+              data: paragraphs.map((paragraphText) => ({
+                text: paragraphText,
+              })),
+            },
+          },
+          title: input.filename,
+        },
+      });
+      return newPdf;
     }),
 
   get: protectedProcedure.input(z.void()).query(async ({ ctx }) => {
