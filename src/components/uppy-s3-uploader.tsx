@@ -48,15 +48,17 @@ function UppyS3Uploader({
             toast.error("File name or type missing.");
             throw new Error("File name or type missing.");
           }
+
           try {
             const result = await getPresignedUrlAsync({
               filename: file.name,
               contentType: file.type,
             });
 
-            if (!result || !result.signedUrl) {
+            if (result?.signedUrl) {
               throw new Error("Invalid pre-signed URL response.");
             }
+
             if (result.key) {
               uppy.setFileMeta(file.id, { s3Key: result.key });
             }
@@ -66,7 +68,7 @@ function UppyS3Uploader({
               headers: result.headers || { "Content-Type": file.type },
               fields: result.fields || {},
             };
-          } catch (error) {
+          } catch (error: unknown) {
             const message =
               error instanceof Error
                 ? error.message
@@ -96,7 +98,7 @@ function UppyS3Uploader({
 
       uppy.on("upload-error", (file, error, response) => {
         toast.error(
-          `S3 Upload Error for ${file?.name || "file"}: ${error.message}`,
+          `S3 Upload Error for ${file?.name ?? "file"}: ${error.message}`,
         );
         console.error("Uppy S3 Upload Error:", { file, error, response });
       });
