@@ -1,7 +1,5 @@
 "use client";
 import { useRef, useEffect, useState } from "react";
-import { Tooltip } from "react-tooltip"; // Import the Tooltip component
-
 import TypingArea from "./typing-area";
 import { useRecordStore, type GameStatus } from "@/context/store";
 import { api } from "@/trpc/react";
@@ -16,15 +14,17 @@ import Modal from "./uppy-model";
 import { SubscriptonButton } from "./nav-buttons/subscription-button";
 import { ContactButton } from "./nav-buttons/contact-button";
 import { boilerplateText } from "./boilerplate-text";
+import { UploadButton } from "./nav-buttons/upload-button";
 
 function getRandomInt(max: number) {
   return Math.floor(Math.random() * max);
 }
 
 function App() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const session = useSession();
   const utils = api.useUtils();
+  const gameState = useRecordStore((state) => state.status);
+  const setGameState = useRecordStore((state) => state.setStatus);
 
   const {
     data: isAboveLimit,
@@ -35,23 +35,15 @@ function App() {
     refetchOnWindowFocus: true,
   });
 
-  const { data: hasActiveSubscription } =
-    api.limits.hasActiveSubscription.useQuery(undefined, {
-      enabled: !!session.data,
-      refetchOnWindowFocus: true,
-    });
-
   const uploadShouldBeDisabled =
     !session.data || // No session, no uploads
     isLoadingLimit || // Still checking the limit
     isAboveLimit === true || // Explicitly above limit (true means limit is hit)
     !!limitError; // An error occurred fetching limit, safer to disable
 
-  const uploadButtonTooltipContent =
-    "Free users can upload up to 5 PDFs. Upgrade to Pro for up to 50 PDFs!";
-
   const [input, setInput] = useState("");
   const [target, setTarget] = useState("");
+
   const [boilerplate, setBoilerplate] = useState(
     getRandomInt(boilerplateText.database.length),
   );
@@ -64,42 +56,50 @@ function App() {
   const selectPdf = (pdfId: number) => {
     setSelectedPdf(pdfId);
     resetGame();
-    if (pdfsQuery.data) {
-      console.log(pdfsQuery.data.find((pdf) => pdf.id === pdfId));
-    }
   };
 
   useEffect(() => {
-    if (!pdfsQuery.data || !selectedPdf) return; // check for selectedPdf
-    const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
-    if (!pdf || !pdf.paragraphs || pdf.paragraphs.length === 0) return; // check for paragraphs
-    const rand_para_id = getRandomInt(pdf.paragraphs.length);
-    const rand_para = pdf.paragraphs[rand_para_id];
-    if (!rand_para) return;
-    setTarget(rand_para.text);
+    if (pdfsQuery.data && selectedPdf) {
+      const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
+      if (pdf?.paragraphs?.length) {
+        const random_paragraph_id = getRandomInt(pdf.paragraphs.length);
+        const random_paragraph = pdf.paragraphs[random_paragraph_id];
+
+        if (random_paragraph) {
+          setTarget(random_paragraph.text);
+        } else {
+          setTarget("Selected pdf has no text (should not be possible)");
+        }
+      } else {
+        setTarget("Selected pdf has no paragraphs");
+      }
+    } else {
+      const index = getRandomInt(boilerplateText.database.length);
+      setTarget(boilerplateText.database[index]!); // won't be undefined since i'm getting a rand int
+    }
   }, [pdfsQuery.data, selectedPdf]);
 
-  const gameState = useRecordStore((state) => state.status);
-  const setGameState = useRecordStore((state) => state.setStatus);
   useGameStateMachine(input, target);
-
-  const boilerPlate = boilerplateText.database[boilerplate];
 
   const resetGame = () => {
     setGameState("idle");
     setInput("");
     setTarget("");
     inputRef.current?.focus();
+    // re-fresh pdf
     if (!selectedPdf) {
-      setBoilerplate(() => getRandomInt(boilerplateText.database.length));
+      setBoilerplate(getRandomInt(boilerplateText.database.length));
     } else {
-      if (!pdfsQuery.data) return;
-      const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
-      if (!pdf || !pdf.paragraphs || pdf.paragraphs.length === 0) return;
-      const rand_para_id = getRandomInt(pdf.paragraphs.length);
-      const rand_para = pdf.paragraphs[rand_para_id];
-      if (!rand_para) return;
-      setTarget(rand_para.text);
+      if (pdfsQuery.data) {
+        const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
+        if (pdf?.paragraphs?.length) {
+          const rand_para_id = getRandomInt(pdf.paragraphs.length);
+          const rand_para = pdf.paragraphs[rand_para_id];
+          if (rand_para) {
+            setTarget(rand_para.text);
+          }
+        }
+      }
     }
   };
 
@@ -109,10 +109,7 @@ function App() {
     }
   };
 
-  const {
-    mutate: addPdfToProcess,
-    isPending: isBackendProcessing,
-  } = // Renamed isPending for clarity
+  const { mutate: addPdfToProcess, isPending: isBackendProcessing } =
     api.pdfProcessor.add.useMutation({
       onMutate: (variables) => {
         toast.loading(
@@ -143,18 +140,12 @@ function App() {
 
   const [isUppyOpen, setUppyOpen] = useState(false);
 
-  const uploadActionShouldBeDisabled =
-    !session.data ||
-    isLoadingLimit || // Still checking the limit
-    isAboveLimit === true ||
-    !!limitError; // Error fetching limit
-
   const uploadButtonText = isBackendProcessing ? "processing..." : "upload pdf";
-  const uploadButtonIsDisabled =
-    uploadActionShouldBeDisabled || isBackendProcessing;
+
+  const uploadButtonIsDisabled = uploadShouldBeDisabled || isBackendProcessing;
 
   const handleOpenUppyModal = () => {
-    if (uploadActionShouldBeDisabled) {
+    if (uploadShouldBeDisabled) {
       toast.error("Cannot upload PDF. Check limits or login status.");
       return;
     }
@@ -164,16 +155,6 @@ function App() {
     }
     setUppyOpen(true);
   };
-
-  useEffect(() => {
-    if (!boilerPlate && !selectedPdf) {
-      setTarget("Select a PDF or one will be chosen for you.");
-      return;
-    }
-    if (!selectedPdf && boilerPlate) {
-      setTarget(boilerPlate);
-    }
-  }, [boilerPlate, selectedPdf, setTarget]);
 
   const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -207,49 +188,16 @@ function App() {
 
         {session.data && (
           <>
-            {uploadShouldBeDisabled ? (
-              <>
-                <button
-                  data-tooltip-id="upload-limit-tooltip"
-                  data-tooltip-content={uploadButtonTooltipContent}
-                  className={
-                    "text-s cursor-not-allowed cursor-pointer font-mono text-gray-500 transition-colors"
-                  }
-                  aria-disabled="true"
-                  onClick={handleOpenUppyModal}
-                >
-                  upload pdf
-                </button>
-                <Tooltip
-                  id="upload-limit-tooltip"
-                  place="bottom"
-                  style={{
-                    backgroundColor: "rgb(55 65 81)",
-                    color: "white",
-                    maxWidth: "250px",
-                    fontSize: "0.875rem", // text-sm
-                    padding: "0.5rem", // p-2
-                    borderRadius: "0.375rem", // rounded-md
-                    textAlign: "center",
-                    zIndex: 50, // Ensure tooltip is on top
-                  }}
-                />
-              </>
-            ) : (
-              <button
-                className={`text-s cursor-pointer font-mono text-gray-300 transition-colors hover:text-gray-500 ${
-                  uploadButtonIsDisabled ? "cursor-wait opacity-70" : ""
-                }`}
-                disabled={uploadButtonIsDisabled}
-                onClick={handleOpenUppyModal}
-              >
-                {uploadButtonText}
-              </button>
-            )}
+            <UploadButton
+              uploadShouldBeDisabled={uploadShouldBeDisabled}
+              handleOpenUppyModal={handleOpenUppyModal}
+              uploadButtonText={uploadButtonText}
+              uploadButtonIsDisabled={uploadButtonIsDisabled}
+            />
 
             <PickButton selectPdf={selectPdf} />
 
-            <SubscriptonButton hasActiveSubscription={hasActiveSubscription} />
+            <SubscriptonButton />
           </>
         )}
 

@@ -1,14 +1,16 @@
-import { authClient } from "@/server/auth/react-client";
+import { authClient, useSession } from "@/server/auth/react-client";
 import { api } from "@/trpc/react";
 import toast from "react-hot-toast";
 
-interface SubscriptonButtonProps {
-  hasActiveSubscription: boolean | undefined;
-}
+export function SubscriptonButton() {
+  const session = useSession();
 
-export function SubscriptonButton({
-  hasActiveSubscription,
-}: SubscriptonButtonProps) {
+  const { data: hasActiveSubscription } =
+    api.limits.hasActiveSubscription.useQuery(undefined, {
+      enabled: !!session.data,
+      refetchOnWindowFocus: true,
+    });
+
   return (
     <>
       {hasActiveSubscription ? (
