@@ -44,10 +44,6 @@ function App() {
   const [input, setInput] = useState("");
   const [target, setTarget] = useState("");
 
-  const [boilerplate, setBoilerplate] = useState(
-    getRandomInt(boilerplateText.database.length),
-  );
-
   const [selectedPdf, setSelectedPdf] = useState<number | null>(null);
   const pdfsQuery = api.pdfProcessor.get.useQuery(undefined, {
     enabled: !!session.data,
@@ -75,7 +71,7 @@ function App() {
       }
     } else {
       const index = getRandomInt(boilerplateText.database.length);
-      setTarget(boilerplateText.database[index]!); // won't be undefined since i'm getting a rand int
+      setTarget(boilerplateText.database[index]!); // won't be undefined since i'm getting a rand int within len
     }
   }, [pdfsQuery.data, selectedPdf]);
 
@@ -88,7 +84,8 @@ function App() {
     inputRef.current?.focus();
     // re-fresh pdf
     if (!selectedPdf) {
-      setBoilerplate(getRandomInt(boilerplateText.database.length));
+      const index = getRandomInt(boilerplateText.database.length);
+      setTarget(boilerplateText.database[index]!); // won't be undefined since i'm getting a rand int within len
     } else {
       if (pdfsQuery.data) {
         const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
