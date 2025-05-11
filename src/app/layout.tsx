@@ -26,7 +26,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
       <head>
-        <Script src="//unpkg.com/react-scan/dist/auto.global.js" />
+        <Script
+          crossOrigin="anonymous"
+          src="//unpkg.com/react-scan/dist/auto.global.js"
+        />
       </head>
       <body className="bg-background min-h-screen font-sans antialiased">
         <PostHogProvider>
