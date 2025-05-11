@@ -8,7 +8,8 @@ export function SubscriptonButton() {
   const { data: hasActiveSubscription } =
     api.limits.hasActiveSubscription.useQuery(undefined, {
       enabled: !!session.data,
-      refetchOnWindowFocus: true,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
     });
 
   return (
