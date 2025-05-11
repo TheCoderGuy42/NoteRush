@@ -15,7 +15,7 @@ export default function RecordList({ resetGame }: RecordListProps) {
   const session = useSession();
   const [localRecords, setLocalRecords] = useState<ActualRecord[]>([]);
 
-  // Load local records when not signed in
+  // Load local records when not signed in or when game state changes
   useEffect(() => {
     if (!session.data) {
       try {
@@ -27,7 +27,7 @@ export default function RecordList({ resetGame }: RecordListProps) {
         console.error("Error loading records from local storage:", error);
       }
     }
-  }, [session.data]);
+  }, [session.data, gameState]); // Re-load when game state changes
 
   const { data, isLoading } = api.typingEntry.getAll.useQuery(undefined, {
     enabled: gameState === "stopped" && !!session.data,
