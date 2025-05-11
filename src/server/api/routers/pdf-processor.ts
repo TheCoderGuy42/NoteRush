@@ -2,10 +2,16 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { aiService } from "./gemini-prompt";
-import { s3Client } from "./s3";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 async function getFileAsBuffer(key: string) {
+  const s3Client = new S3Client({
+    region: process.env.AWS_S3_REGION!,
+    credentials: {
+      accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY!,
+    },
+  });
   const getObjectParams = {
     Bucket: process.env.AWS_S3_BUCKET_NAME,
     Key: key,

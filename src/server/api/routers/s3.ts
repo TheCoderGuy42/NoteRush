@@ -5,14 +5,6 @@ import { v4 as uuidv4 } from "uuid";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { TRPCError } from "@trpc/server";
 
-export const s3Client = new S3Client({
-  region: process.env.AWS_S3_REGION!,
-  credentials: {
-    accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY!,
-  },
-});
-
 export const s3Upload = createTRPCRouter({
   getPresignedUrl: protectedProcedure
     .input(
@@ -23,6 +15,13 @@ export const s3Upload = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const userId = ctx.session?.user.id;
+      const s3Client = new S3Client({
+        region: process.env.AWS_S3_REGION!,
+        credentials: {
+          accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY!,
+        },
+      });
 
       if (!userId) {
         throw new TRPCError({
