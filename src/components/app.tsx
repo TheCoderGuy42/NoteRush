@@ -297,7 +297,6 @@ function App() {
           <TypingArea target={target} input={input} />
         </div>
       )}
-
       {gameState === "stopped" && (
         <>
           <RecordList resetGame={resetGame} />
