@@ -26,6 +26,7 @@ export const env = createEnv({
    */
   client: {
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
+    NEXT_PUBLIC_GOOGLE_API_KEY: z.string().min(1),
   },
 
   /**
@@ -43,6 +44,7 @@ export const env = createEnv({
     AWS_S3_SECRET_ACCESS_KEY:
       process.env.AWS_S3_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY,
     AWS_S3_BUCKET_NAME: process.env.AWS_S3_BUCKET_NAME,
+    NEXT_PUBLIC_GOOGLE_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_API_KEY,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
