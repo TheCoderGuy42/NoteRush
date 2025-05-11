@@ -13,7 +13,8 @@ interface RecordListProps {
 export default function RecordList({ resetGame }: RecordListProps) {
   const gameState = useRecordStore((state) => state.status);
   const session = useSession();
-  const [localRecords, setLocalRecords] = useState<ActualRecord[]>([]);
+
+  let localRecords: ActualRecord[] = [];
 
   useEffect(() => {
     if (!session.data) {
@@ -21,7 +22,7 @@ export default function RecordList({ resetGame }: RecordListProps) {
         const storedRecords = localStorage.getItem("typingRecords");
         console.log("stored records " + storedRecords);
         if (storedRecords) {
-          setLocalRecords(JSON.parse(storedRecords));
+          localRecords = JSON.parse(storedRecords);
         }
       } catch (error) {
         console.error("Error loading records from local storage:", error);
