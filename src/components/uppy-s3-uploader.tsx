@@ -1,7 +1,7 @@
 // components/UppyS3Uploader.tsx
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Uppy, { type UppyFile, type Meta, type Body } from "@uppy/core";
 import AwsS3 from "@uppy/aws-s3";
 import { Dashboard as UppyReactDashboard } from "@uppy/react";
@@ -21,13 +21,12 @@ function UppyS3Uploader({
   onUppyDone,
 }: UppyS3UploaderProps) {
   const uppyRef = useRef<Uppy | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
   const { mutateAsync: getPresignedUrlAsync } =
     api.s3Upload.getPresignedUrl.useMutation();
 
   useEffect(() => {
     console.log("UppyS3Uploader useEffect: Initializing or re-evaluating.");
-    // This variable will hold the instance created in this effect run for cleanup
-    let uppyInstanceThisEffect: Uppy | null = null;
 
     if (!uppyRef.current) {
       console.log("UppyS3Uploader: Creating new Uppy instance.");
@@ -57,7 +56,6 @@ function UppyS3Uploader({
               contentType: file.type,
             });
 
-            // CRITICAL FIX HERE: Check if signedUrl is MISSING or not valid
             if (!result.signedUrl) {
               const errorMsg = "Invalid or missing pre-signed URL from server.";
               toast.error(errorMsg);
@@ -109,7 +107,6 @@ function UppyS3Uploader({
             `S3 key missing for ${file.name}. Cannot proceed with server processing.`,
           );
           console.error("upload-success: S3 key missing in file.meta", file);
-          // Potentially call onUppyDone or handle this as a failed state
           return;
         }
         onS3UploadSuccess({ filename: file.name, s3Key });
@@ -128,40 +125,28 @@ function UppyS3Uploader({
         if (result.failed) {
           toast.error(`${result.failed.length} file(s) failed to upload.`);
         }
-        // onUppyDone will be called regardless of success/failure of individual files,
-        // as it signifies Uppy has finished its batch.
+
         if (onUppyDone) {
           onUppyDone();
         }
       });
 
       uppyRef.current = uppy;
-      uppyInstanceThisEffect = uppy; // Assign to the variable scoped to this effect run
-    } else {
-      console.log("UppyS3Uploader: Uppy instance already exists in ref.");
+      setIsInitialized(true);
     }
 
-    // Cleanup function
     return () => {
-      if (uppyInstanceThisEffect) {
-        // Clean up the instance created in *this* effect run
-        console.log(
-          "UppyS3Uploader: Cleaning up Uppy instance from this effect.",
-        );
-        uppyInstanceThisEffect.clear();
-      }
-      // Only nullify the ref if the instance being cleaned up is the one currently in the ref.
-      // This handles race conditions if the effect runs multiple times quickly.
-      if (uppyRef.current === uppyInstanceThisEffect) {
+      if (uppyRef.current) {
+        console.log("UppyS3Uploader: Cleaning up Uppy instance.");
+        uppyRef.current.clear();
         uppyRef.current = null;
+        setIsInitialized(false);
       }
     };
-  }, [getPresignedUrlAsync, onS3UploadSuccess, onUppyDone]); // Dependencies are correct
+  }, [getPresignedUrlAsync, onS3UploadSuccess, onUppyDone]);
 
-  if (!uppyRef.current) {
-    console.log(
-      "UppyS3Uploader: Rendering 'Loading Uploader...' because uppyRef.current is null.",
-    );
+  if (!isInitialized || !uppyRef.current) {
+    console.log("UppyS3Uploader: Rendering loading state.");
     return <p>Loading Uploader...</p>;
   }
 
@@ -170,10 +155,6 @@ function UppyS3Uploader({
     <UppyReactDashboard
       uppy={uppyRef.current}
       proudlyDisplayPoweredByUppy={false}
-      // Notes for Dashboard:
-      // - You might want to add plugins here like ['Webcam'] if needed
-      // - Consider `hideUploadButton: true` if `autoProceed` is true and you don't want a manual start button within Uppy
-      // - `closeModalOnClickOutside`, `onRequestCloseModal` if you want Dashboard to control modal state (less common if parent controls it)
     />
   );
 }
