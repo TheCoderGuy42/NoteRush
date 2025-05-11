@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import StatusBar from "./status-bar";
+import { useRecordStore } from "@/context/store";
 
 interface TypingAreaInt {
   target: string;
@@ -51,6 +52,8 @@ function useRenderer(
 
 function TypingArea(props: TypingAreaInt) {
   const { target, input } = props;
+  const gameState = useRecordStore((state) => state.status);
+
   const textContainerRef = useRef<HTMLDivElement>(null); // scrollable text
 
   const [scrollOffset, setScrollOffset] = useState(0);
@@ -58,9 +61,9 @@ function TypingArea(props: TypingAreaInt) {
   const { output: display, mistakes } = useRenderer(target, input);
 
   // when it gets mounted and unmounted
-  useEffect(() => {
+  if (gameState === "stopped") {
     setScrollOffset(0);
-  }, []);
+  }
 
   useEffect(() => {
     if (input === "" || !textContainerRef.current) {
