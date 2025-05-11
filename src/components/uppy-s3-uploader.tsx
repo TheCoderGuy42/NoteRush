@@ -8,14 +8,11 @@ import { Dashboard as UppyReactDashboard } from "@uppy/react";
 import { api } from "@/trpc/react"; // Only for getPresignedUrlAsync
 import toast from "react-hot-toast";
 
-// Import Uppy's CSS
 import "@uppy/core/dist/style.min.css";
 import "@uppy/dashboard/dist/style.min.css";
 
 interface UppyS3UploaderProps {
-  // Callback when a file is successfully uploaded to S3
   onS3UploadSuccess: (data: { filename: string; s3Key: string }) => void;
-  // Callback for when Uppy's 'complete' event fires (all files processed by Uppy)
   onUppyDone: () => void;
 }
 
@@ -24,30 +21,34 @@ function UppyS3Uploader({
   onUppyDone,
 }: UppyS3UploaderProps) {
   const uppyRef = useRef<Uppy | null>(null);
-
-  // Only this mutation is needed here now
   const { mutateAsync: getPresignedUrlAsync } =
     api.s3Upload.getPresignedUrl.useMutation();
 
   useEffect(() => {
-    console.log("okie goes to useeffect");
-    let uppyInstanceToCleanUp: Uppy | null = null;
+    console.log("UppyS3Uploader useEffect: Initializing or re-evaluating.");
+    // This variable will hold the instance created in this effect run for cleanup
+    let uppyInstanceThisEffect: Uppy | null = null;
 
     if (!uppyRef.current) {
+      console.log("UppyS3Uploader: Creating new Uppy instance.");
       const uppy = new Uppy({
-        autoProceed: true, // Consider autoProceed true if modal is just for Uppy
+        autoProceed: true,
         debug: process.env.NODE_ENV === "development",
         restrictions: {
           maxFileSize: 10 * 1024 * 1024, // 10MB
-          maxNumberOfFiles: 1, // If you only want one PDF at a time for processing
+          maxNumberOfFiles: 1,
+          // allowedFileTypes: ['.pdf'], // Be specific if only PDFs are allowed
         },
       });
 
       uppy.use(AwsS3, {
         getUploadParameters: async (file: UppyFile<Meta, Body>) => {
+          console.log("getUploadParameters called for:", file.name);
           if (!file.name || !file.type) {
-            toast.error("File name or type missing.");
-            throw new Error("File name or type missing.");
+            const errorMsg = "File name or type missing.";
+            toast.error(errorMsg);
+            console.error("getUploadParameters error:", errorMsg, file);
+            throw new Error(errorMsg);
           }
 
           try {
@@ -56,16 +57,33 @@ function UppyS3Uploader({
               contentType: file.type,
             });
 
-            if (result?.signedUrl) {
-              throw new Error("Invalid pre-signed URL response.");
+            // CRITICAL FIX HERE: Check if signedUrl is MISSING or not valid
+            if (!result || !result.signedUrl) {
+              const errorMsg = "Invalid or missing pre-signed URL from server.";
+              toast.error(errorMsg);
+              console.error(
+                "getUploadParameters error: Invalid presigned URL response",
+                result,
+              );
+              throw new Error(errorMsg);
             }
+            console.log(
+              "getUploadParameters: Received signed URL data:",
+              result,
+            );
 
             if (result.key) {
               uppy.setFileMeta(file.id, { s3Key: result.key });
+            } else {
+              console.warn(
+                "getUploadParameters: S3 key missing in presigned URL response. File processing might fail later.",
+              );
+              // You might want to decide if this is a fatal error for your use case
             }
+
             return {
               method: result.method || "PUT",
-              url: result.signedUrl,
+              url: result.signedUrl, // This must be a valid URL string
               headers: result.headers || { "Content-Type": file.type },
               fields: result.fields || {},
             };
@@ -74,66 +92,88 @@ function UppyS3Uploader({
               error instanceof Error
                 ? error.message
                 : "Failed to get upload URL";
-            toast.error(message);
-            console.error("getUploadParameters error:", error);
-            throw error;
+            toast.error(`Error preparing upload: ${message}`);
+            console.error("getUploadParameters caught error:", error);
+            throw error; // Re-throw to Uppy
           }
         },
-      } as any);
+      } as any); // Removed 'as any' - ensure your tRPC type for getPresignedUrl matches expected return
 
       uppy.on("upload-success", (file) => {
         if (!file?.name) return;
         const s3Key = file.meta.s3Key as string;
+        console.log("Uppy event: upload-success", file.name, "Key:", s3Key);
 
         if (!s3Key) {
           toast.error(
-            `S3 key missing for ${file.name}. Cannot proceed with processing.`,
+            `S3 key missing for ${file.name}. Cannot proceed with server processing.`,
           );
-          console.error("S3 key missing in file.meta for upload-success", file);
+          console.error("upload-success: S3 key missing in file.meta", file);
+          // Potentially call onUppyDone or handle this as a failed state
           return;
         }
-        // Call the prop to trigger backend processing in App.tsx
         onS3UploadSuccess({ filename: file.name, s3Key });
-        toast.success(`"${file.name}" uploaded to S3. Processing will start.`);
+        toast.success(`"${file.name}" uploaded. Starting server processing.`);
       });
 
       uppy.on("upload-error", (file, error, response) => {
-        toast.error(
-          `S3 Upload Error for ${file?.name ?? "file"}: ${error.message}`,
-        );
-        console.error("Uppy S3 Upload Error:", { file, error, response });
+        const fileName = file?.name ?? "file";
+        const errorMessage = error?.message ?? "Unknown upload error";
+        toast.error(`Upload Error for ${fileName}: ${errorMessage}`);
+        console.error("Uppy event: upload-error", { file, error, response });
       });
 
       uppy.on("complete", (result) => {
-        console.log("Uppy batch complete:", result);
-        // Call onUppyDone to allow parent to close modal or perform other actions
+        console.log("Uppy event: complete", result);
+        if (result.failed) {
+          toast.error(`${result.failed.length} file(s) failed to upload.`);
+        }
+        // onUppyDone will be called regardless of success/failure of individual files,
+        // as it signifies Uppy has finished its batch.
         if (onUppyDone) {
           onUppyDone();
         }
       });
 
       uppyRef.current = uppy;
-      uppyInstanceToCleanUp = uppy;
+      uppyInstanceThisEffect = uppy; // Assign to the variable scoped to this effect run
+    } else {
+      console.log("UppyS3Uploader: Uppy instance already exists in ref.");
     }
 
+    // Cleanup function
     return () => {
-      if (uppyInstanceToCleanUp) {
-        uppyInstanceToCleanUp.clear();
+      if (uppyInstanceThisEffect) {
+        // Clean up the instance created in *this* effect run
+        console.log(
+          "UppyS3Uploader: Cleaning up Uppy instance from this effect.",
+        );
+        uppyInstanceThisEffect.clear();
+      }
+      // Only nullify the ref if the instance being cleaned up is the one currently in the ref.
+      // This handles race conditions if the effect runs multiple times quickly.
+      if (uppyRef.current === uppyInstanceThisEffect) {
+        uppyRef.current = null;
       }
     };
-  }, [getPresignedUrlAsync, onS3UploadSuccess, onUppyDone]);
+  }, [getPresignedUrlAsync, onS3UploadSuccess, onUppyDone]); // Dependencies are correct
 
   if (!uppyRef.current) {
+    console.log(
+      "UppyS3Uploader: Rendering 'Loading Uploader...' because uppyRef.current is null.",
+    );
     return <p>Loading Uploader...</p>;
   }
 
+  console.log("UppyS3Uploader: Rendering UppyReactDashboard.");
   return (
-    // Toaster should ideally be at a higher level in App.tsx or _app.tsx
     <UppyReactDashboard
       uppy={uppyRef.current}
-      proudlyDisplayPoweredByUppy={false} // Your choice
-      // You might want to hide the "Done" button if onUppyDone handles modal closing
-      // or configure what happens when Uppy's internal "Done" is clicked.
+      proudlyDisplayPoweredByUppy={false}
+      // Notes for Dashboard:
+      // - You might want to add plugins here like ['Webcam'] if needed
+      // - Consider `hideUploadButton: true` if `autoProceed` is true and you don't want a manual start button within Uppy
+      // - `closeModalOnClickOutside`, `onRequestCloseModal` if you want Dashboard to control modal state (less common if parent controls it)
     />
   );
 }
