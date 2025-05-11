@@ -27,31 +27,18 @@ async function withRetry<T>(
 
 async function getFileAsBuffer(key: string) {
   // Debug logging to diagnose AWS credential issues
-  console.log("PDF Processor - AWS ENV DEBUG:");
-  console.log("AWS_S3_REGION:", process.env.AWS_S3_REGION!);
-  console.log(
-    "AWS_S3_ACCESS_KEY_ID:",
-    process.env.AWS_S3_ACCESS_KEY_ID!
-      ? process.env.AWS_S3_ACCESS_KEY_ID!.substring(0, 5) + "..."
-      : "MISSING",
-  );
-  console.log(
-    "AWS_S3_SECRET_ACCESS_KEY:",
-    process.env.AWS_S3_SECRET_ACCESS_KEY! ? "***set***" : "***missing***",
-  );
-  console.log("AWS_S3_BUCKET_NAME:", process.env.AWS_S3_BUCKET_NAME!);
 
   return await withRetry(async () => {
     const s3Client = new S3Client({
-      region: process.env.AWS_S3_REGION,
+      region: env.AWS_S3_REGION,
       credentials: {
-        accessKeyId: process.env.AWS_S3_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_S3_SECRET_ACCESS_KEY!,
+        accessKeyId: env.AWS_S3_ACCESS_KEY_ID,
+        secretAccessKey: env.AWS_S3_SECRET_ACCESS_KEY,
       },
     });
 
     const getObjectParams = {
-      Bucket: process.env.AWS_S3_BUCKET_NAME!,
+      Bucket: env.AWS_S3_BUCKET_NAME,
       Key: key,
     };
 
