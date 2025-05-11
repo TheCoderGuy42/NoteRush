@@ -182,32 +182,25 @@ function App() {
 
   useEffect(() => {
     if (gameState === "stopped") {
+      // Only save record if not signed in (DB records are handled in StatusBar)
       if (!session.data) {
-        const freshRecord = {
-          id: Date.now(),
+        // Use the Zustand action instead of direct localStorage manipulation
+        useRecordStore.getState().addLocalRecord({
           wpm: useRecordStore.getState().wpm,
           time: useRecordStore.getState().time,
           mistakes: useRecordStore.getState().mistakes,
           accuracy: useRecordStore.getState().accuracy,
-        };
-
-        console.log("Saving to local storage:", freshRecord);
-
-        try {
-          const existingRecordsJson = localStorage.getItem("typingRecords");
-          const existingRecords = existingRecordsJson
-            ? JSON.parse(existingRecordsJson)
-            : [];
-
-          const updatedRecords = [freshRecord, ...existingRecords].slice(0, 50); // Limit to 50 records
-
-          localStorage.setItem("typingRecords", JSON.stringify(updatedRecords));
-        } catch (error) {
-          console.error("Error saving to local storage:", error);
-        }
+        });
       }
     }
   }, [gameState, session.data]);
+
+  // Load initial records on mount
+  useEffect(() => {
+    if (!session.data) {
+      useRecordStore.getState().loadInitialLocalRecords();
+    }
+  }, [session.data]);
 
   return (
     <>
