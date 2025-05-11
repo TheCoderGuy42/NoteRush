@@ -55,7 +55,7 @@ Instructions:
     *   Convert all text to lowercase.
     *   Remove any residual formatting artifacts.
 6.  **Filter by Length:** Ensure the final cleaned textual snippets are concise, ideally between **30 and 50 words**. This range reflects the density of the "Desired Output Examples". Adjust slightly if needed, but the goal is conciseness.
-7.  **Format Output:** Return a list of the cleaned, information-dense **textual snippets** that meet all criteria. Format the output as a JSON list of strings. Provide **ideally 20 snippets**, unless there's not enough suitable information to meet the quality and quantity criteria. If fewer high-quality snippets are found, provide those.
+7.  **Format Output:** Return a list of the cleaned, information-dense **textual snippets** that meet all criteria. Format the output as a JSON list of strings. Provide **ideally 30 snippets**, unless there's not enough suitable information to meet the quality and quantity criteria. If fewer high-quality snippets are found, provide those.
 
 Example of bad output to avoid (too conversational, not informative enough, incomplete, or just describing an image without extracting a concept/fact):
 "high data volume: we're talking billions of images or millions of customer interactions" (Too conversational for this specific style)
