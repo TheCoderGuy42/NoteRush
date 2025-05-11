@@ -11,7 +11,6 @@ import toast from "react-hot-toast";
 
 import "@uppy/core/dist/style.min.css";
 import "@uppy/dashboard/dist/style.min.css";
-import "@uppy/google-drive/dist/style.min.css";
 
 interface UppyS3UploaderProps {
   onS3UploadSuccess: (data: { filename: string; s3Key: string }) => void;
