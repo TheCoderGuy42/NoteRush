@@ -49,7 +49,7 @@ export default function StatusBar({
 
   useEffect(() => {
     if (gameState === "running") {
-      currentMistakesRef.current = mistakesInputed; // animate creates a closue so .current is needed
+      currentMistakesRef.current = mistakesInputed; //  animate creates a closue so .current is needed
     }
   }, [mistakesInputed, gameState]);
 
