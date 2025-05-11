@@ -30,6 +30,7 @@ function UppyS3Uploader({
     api.s3Upload.getPresignedUrl.useMutation();
 
   useEffect(() => {
+    console.log("okie goes to useeffect");
     let uppyInstanceToCleanUp: Uppy | null = null;
 
     if (!uppyRef.current) {
