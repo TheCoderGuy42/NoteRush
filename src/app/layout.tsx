@@ -7,7 +7,7 @@ import { TRPCReactProvider } from "@/trpc/react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PostHogProvider } from "@/components/PostHogProvider";
-import Script from "next/script";
+import { ReactScan } from "@/components/react-scan";
 
 export const metadata: Metadata = {
   title: "Note Rush",
@@ -25,9 +25,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
-      <head>
-        <script src="//unpkg.com/react-scan/dist/auto.global.js" async />
-      </head>
+      <ReactScan />
       <body className="bg-background min-h-screen font-sans antialiased">
         <PostHogProvider>
           <ThemeProvider
