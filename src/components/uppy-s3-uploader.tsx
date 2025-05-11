@@ -160,7 +160,7 @@ function UppyS3Uploader({
 
       uppy.on("complete", (result) => {
         console.log("Uppy event: complete", result);
-        if (result.failed) {
+        if (result.failed && result.failed.length > 0) {
           toast.error(`${result.failed.length} file(s) failed to upload.`);
         }
 
