@@ -32,7 +32,9 @@ function App() {
     error: limitError,
   } = api.limits.isAbovePdfLimit.useQuery(undefined, {
     enabled: !!session.data,
-    refetchOnWindowFocus: true,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   const uploadShouldBeDisabled =
@@ -46,6 +48,9 @@ function App() {
 
   const [selectedPdf, setSelectedPdf] = useState<number | null>(null);
   const pdfsQuery = api.pdfProcessor.get.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
     enabled: !!session.data,
   });
 

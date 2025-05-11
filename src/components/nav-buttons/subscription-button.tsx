@@ -9,6 +9,7 @@ export function SubscriptonButton() {
     api.limits.hasActiveSubscription.useQuery(undefined, {
       enabled: !!session.data,
       refetchOnWindowFocus: false,
+      refetchOnMount: false,
       refetchOnReconnect: false,
     });
 
