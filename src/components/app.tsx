@@ -55,8 +55,10 @@ function App() {
   });
 
   const selectPdf = (pdfId: number) => {
+    console.log("SELECT_PDF_HANDLER: Called with pdfId:", pdfId);
     setSelectedPdf(pdfId);
     setGameState("idle");
+    setInput("");
   };
 
   // This useEffect is ONLY for loading the initial boilerplate text ONCE
