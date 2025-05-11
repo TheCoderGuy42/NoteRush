@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Uppy, { type UppyFile, type Meta, type Body } from "@uppy/core";
 import AwsS3 from "@uppy/aws-s3";
 import { Dashboard as UppyReactDashboard } from "@uppy/react";
-import GoogleDrive from "@uppy/google-drive";
+import GoogleDrivePicker from "@uppy/google-drive-picker";
 import { api } from "@/trpc/react"; // Only for getPresignedUrlAsync
 import toast from "react-hot-toast";
 
@@ -137,8 +137,19 @@ function UppyS3Uploader({
       } as any); // Removed 'as any' - ensure your tRPC type for getPresignedUrl matches expected return
 
       // Add Google Drive plugin using Uppy's hosted companion
-      uppy.use(GoogleDrive, {
+      uppy.use(GoogleDrivePicker, {
+        clientId:
+          "283356815990-sok2g49h8cfdb3hpn3e4kmge7rr1lkbc.apps.googleusercontent.com",
+        // You need to create an API key in Google Cloud Console under APIs & Services > Credentials
+        // and restrict it to Google Picker API
+        apiKey: process.env.NEXT_PUBLIC_GOOGLE_API_KEY!,
+        // This is your project number from Google Cloud Console (IAM & Admin > Settings)
+        appId: "900720408260", // Replace with your Google Cloud Project Number
+        // The GoogleDrivePicker doesn't need companionUrl for authentication
+        // It uses Google's own Picker API, but still needs companion for transfers
+        // Just to be sure, we set companionAllowedHosts to allow your domain
         companionUrl: "https://companion.uppy.io",
+        companionAllowedHosts: [/.*\.note-rush\.com$/, /.*\.uppy\.io$/],
       });
 
       uppy.on("upload-success", (file) => {
@@ -199,7 +210,7 @@ function UppyS3Uploader({
     <UppyReactDashboard
       uppy={uppyRef.current}
       proudlyDisplayPoweredByUppy={false}
-      plugins={["GoogleDrive"]}
+      plugins={["GoogleDrivePicker"]}
     />
   );
 }
