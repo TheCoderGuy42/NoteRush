@@ -31,7 +31,8 @@ export default function RecordList({ resetGame }: RecordListProps) {
     );
   }
 
-  // Simple loading placeholder during transition periods
+  // Simple loading placeholder d
+  // uring transition periods
   const isAddingRecord =
     gameState === "stopped" &&
     ((session.data && isLoadingDbRecords) ||
