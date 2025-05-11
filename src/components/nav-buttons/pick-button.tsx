@@ -28,7 +28,7 @@ export default function PickButton({ selectPdf }: PdfDrawerProps) {
 
         <Drawer.Content className="fixed top-0 right-0 bottom-0 z-50 mt-0 flex h-full w-[85%] max-w-sm flex-col rounded-l-[10px] border-l bg-white outline-none sm:w-[400px] dark:border-zinc-800 dark:bg-zinc-900">
           <div className="sticky top-0 flex items-center justify-between border-b bg-inherit p-4 dark:border-zinc-800">
-            <Drawer.Title className="font-medium text-zinc-900 dark:text-zinc-100">
+            <Drawer.Title className="font-mono text-zinc-900 dark:text-zinc-100">
               My PDFs
             </Drawer.Title>
             <Drawer.Description className="mb-2 text-zinc-600"></Drawer.Description>
