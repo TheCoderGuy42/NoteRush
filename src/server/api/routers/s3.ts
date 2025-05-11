@@ -6,6 +6,26 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { TRPCError } from "@trpc/server";
 import { env } from "../../../env";
 
+// Helper function to add delay
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Retry function with exponential backoff
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  retries = 3,
+  delay = 1000,
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    if (retries <= 0) throw error;
+
+    console.log(`Retrying operation after ${delay}ms, ${retries} retries left`);
+    await sleep(delay);
+    return withRetry(fn, retries - 1, delay * 1.5);
+  }
+}
+
 export const s3Upload = createTRPCRouter({
   getPresignedUrl: protectedProcedure
     .input(
@@ -31,14 +51,6 @@ export const s3Upload = createTRPCRouter({
         env.AWS_S3_SECRET_ACCESS_KEY ? "***set***" : "***missing***",
       );
       console.log("AWS_S3_BUCKET_NAME:", env.AWS_S3_BUCKET_NAME);
-
-      const s3Client = new S3Client({
-        region: env.AWS_S3_REGION,
-        credentials: {
-          accessKeyId: env.AWS_S3_ACCESS_KEY_ID,
-          secretAccessKey: env.AWS_S3_SECRET_ACCESS_KEY,
-        },
-      });
 
       if (!userId) {
         throw new TRPCError({
@@ -75,14 +87,25 @@ export const s3Upload = createTRPCRouter({
 
       const key = `uploads/${uuidv4()}-${input.filename.replace(/\s+/g, "-")}`;
 
-      const command = new PutObjectCommand({
-        Bucket: env.AWS_S3_BUCKET_NAME,
-        Key: key,
-        ContentType: input.contentType,
-      });
+      // Use the retry function for S3 operations
+      const signedUrl = await withRetry(async () => {
+        const s3Client = new S3Client({
+          region: env.AWS_S3_REGION,
+          credentials: {
+            accessKeyId: env.AWS_S3_ACCESS_KEY_ID,
+            secretAccessKey: env.AWS_S3_SECRET_ACCESS_KEY,
+          },
+        });
 
-      const signedUrl = await getSignedUrl(s3Client, command, {
-        expiresIn: 60 * 5,
+        const command = new PutObjectCommand({
+          Bucket: env.AWS_S3_BUCKET_NAME,
+          Key: key,
+          ContentType: input.contentType,
+        });
+
+        return await getSignedUrl(s3Client, command, {
+          expiresIn: 60 * 5,
+        });
       });
 
       return {

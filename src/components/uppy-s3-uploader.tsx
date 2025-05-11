@@ -90,7 +90,45 @@ function UppyS3Uploader({
               error instanceof Error
                 ? error.message
                 : "Failed to get upload URL";
-            toast.error(`Error preparing upload: ${message}`);
+            // If it's a credential error, show a more helpful message
+            if (
+              message.includes("credential") ||
+              message.includes("Resolved credential")
+            ) {
+              toast.error(
+                "AWS credential issue. Please try again in a moment.",
+              );
+              console.error("getUploadParameters caught error:", error);
+              // Wait 2 seconds and try again once automatically
+              await new Promise((resolve) => setTimeout(resolve, 2000));
+              try {
+                toast.loading("Retrying upload...");
+                const retryResult = await getPresignedUrlAsync({
+                  filename: file.name,
+                  contentType: file.type,
+                });
+
+                if (retryResult.signedUrl) {
+                  toast.success("Retry successful, continuing upload...");
+                  if (retryResult.key) {
+                    uppy.setFileMeta(file.id, { s3Key: retryResult.key });
+                  }
+                  return {
+                    method: retryResult.method || "PUT",
+                    url: retryResult.signedUrl,
+                    headers: retryResult.headers || {
+                      "Content-Type": file.type,
+                    },
+                    fields: retryResult.fields || {},
+                  };
+                }
+              } catch (retryError) {
+                toast.error("Retry failed. Please try again manually.");
+                console.error("Retry error:", retryError);
+              }
+            } else {
+              toast.error(`Error preparing upload: ${message}`);
+            }
             console.error("getUploadParameters caught error:", error);
             throw error; // Re-throw to Uppy
           }

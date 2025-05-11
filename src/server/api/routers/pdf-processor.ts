@@ -5,6 +5,26 @@ import { aiService } from "./gemini-prompt";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { env } from "../../../env";
 
+// Helper function to add delay
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Retry function with exponential backoff
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  retries = 3,
+  delay = 1000,
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (error) {
+    if (retries <= 0) throw error;
+
+    console.log(`Retrying operation after ${delay}ms, ${retries} retries left`);
+    await sleep(delay);
+    return withRetry(fn, retries - 1, delay * 1.5);
+  }
+}
+
 async function getFileAsBuffer(key: string) {
   // Debug logging to diagnose AWS credential issues
   console.log("PDF Processor - AWS ENV DEBUG:");
@@ -21,28 +41,29 @@ async function getFileAsBuffer(key: string) {
   );
   console.log("AWS_S3_BUCKET_NAME:", env.AWS_S3_BUCKET_NAME);
 
-  const s3Client = new S3Client({
-    region: env.AWS_S3_REGION,
-    credentials: {
-      accessKeyId: env.AWS_S3_ACCESS_KEY_ID,
-      secretAccessKey: env.AWS_S3_SECRET_ACCESS_KEY,
-    },
+  return await withRetry(async () => {
+    const s3Client = new S3Client({
+      region: env.AWS_S3_REGION,
+      credentials: {
+        accessKeyId: env.AWS_S3_ACCESS_KEY_ID,
+        secretAccessKey: env.AWS_S3_SECRET_ACCESS_KEY,
+      },
+    });
+
+    const getObjectParams = {
+      Bucket: env.AWS_S3_BUCKET_NAME,
+      Key: key,
+    };
+
+    const command = new GetObjectCommand(getObjectParams);
+    const s3Object = await s3Client.send(command);
+
+    if (s3Object.Body) {
+      const byteArray = await s3Object.Body.transformToByteArray(); // Get raw bytes
+      return Buffer.from(byteArray).toString("base64");
+    }
+    return undefined;
   });
-  const getObjectParams = {
-    Bucket: env.AWS_S3_BUCKET_NAME,
-    Key: key,
-  };
-
-  const command = new GetObjectCommand(getObjectParams);
-
-  const s3Object = await s3Client.send(command);
-
-  if (s3Object.Body) {
-    const byteArray = await s3Object.Body.transformToByteArray(); // Get raw bytes
-    return Buffer.from(byteArray).toString("base64");
-  }
-
-  return undefined;
 }
 
 export const pdfProcessor = createTRPCRouter({
