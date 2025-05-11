@@ -36,7 +36,7 @@ function UppyS3Uploader({
         restrictions: {
           maxFileSize: 10 * 1024 * 1024, // 10MB
           maxNumberOfFiles: 1,
-          // allowedFileTypes: ['.pdf'], // Be specific if only PDFs are allowed
+          allowedFileTypes: [".pdf"],
         },
       });
 
