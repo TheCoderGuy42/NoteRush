@@ -96,6 +96,7 @@ function App() {
       const index = getRandomInt(boilerplateText.database.length);
       console.log("4. ");
       setTarget(boilerplateText.database[index]!); // won't be undefined since i'm getting a rand int within len
+      inputRef.current?.focus();
     } else {
       if (pdfsQuery.data) {
         const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
@@ -105,6 +106,7 @@ function App() {
           if (rand_para) {
             console.log("3. ");
             setTarget(rand_para.text);
+            inputRef.current?.focus();
           }
         }
       }
