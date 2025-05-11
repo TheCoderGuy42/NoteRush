@@ -91,10 +91,6 @@ function TypingArea(props: TypingAreaInt) {
     if (desiredOffset !== scrollOffset) {
       setScrollOffset(desiredOffset);
     }
-
-    return () => {
-      setScrollOffset(0);
-    };
   }, [input, target, scrollOffset]);
 
   return (
