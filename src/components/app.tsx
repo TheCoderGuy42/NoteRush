@@ -55,18 +55,11 @@ function App() {
   });
   const selectPdf = (pdfId: number) => {
     console.log("SELECT_PDF_HANDLER: Called with pdfId:", pdfId);
-    // 1. Set the new PDF ID
     setSelectedPdf(pdfId);
-    // 2. Reset the game state to idle, so it's ready for the new text
-    setGameState("idle");
-    // 3. Clear the input field immediately
-    setInput("");
-    // The useEffect dependent on [selectedPdf, pdfsQuery.data] will handle setting the new target.
-    // DO NOT call resetGame() here.
+    // setGameState("idle"); // Temporarily remove to see if it's part of the issue
+    // setInput("");       // Temporarily remove
   };
 
-  // This useEffect is ONLY for loading the initial boilerplate text ONCE
-  // when the app loads and no PDF is selected, and target is empty.
   useEffect(() => {
     if (
       !selectedPdf &&
@@ -74,91 +67,61 @@ function App() {
       !pdfsQuery.isLoading &&
       pdfsQuery.status !== "pending"
     ) {
-      console.log(
-        "INITIAL BOILERPLATE EFFECT: No PDF selected, target is empty, query not loading. Setting boilerplate.",
-      );
+      console.log("INITIAL BOILERPLATE EFFECT: Setting boilerplate.");
       const index = getRandomInt(boilerplateText.database.length);
       setTarget(boilerplateText.database[index]!);
-      setInput(""); // Also clear input with boilerplate
+      // setInput("");
     }
-  }, [selectedPdf, target, pdfsQuery.isLoading, pdfsQuery.status]); // `target` is okay here due to strict `target === ""` condition
+  }, [selectedPdf, target, pdfsQuery.isLoading, pdfsQuery.status]);
 
-  // This useEffect handles setting target text WHEN selectedPdf changes AND pdfsQuery.data is available
   useEffect(() => {
     console.log(
       "PDF SELECTION EFFECT: Triggered. selectedPdf:",
       selectedPdf,
-      "pdfsQuery.data available:",
-      !!pdfsQuery.data,
-      "pdfsQuery status:",
+      "pdfsQuery.status:",
       pdfsQuery.status,
     );
-
-    if (selectedPdf && pdfsQuery.data && pdfsQuery.status === "success") {
-      // Ensure query is success
-      const pdf = pdfsQuery.data.find((p) => p.id === selectedPdf);
-      if (pdf?.paragraphs?.length) {
-        const random_paragraph_id = getRandomInt(pdf.paragraphs.length);
-        const random_paragraph = pdf.paragraphs[random_paragraph_id];
-        if (random_paragraph) {
-          // Only set target if it's different, or if we explicitly want a new random one
-          // For now, let's assume we always want a new random one on PDF selection
-          console.log(
-            "1. PDF_SELECTION_EFFECT: Setting target from NEWLY selected PDF.",
-          );
-          setTarget(random_paragraph.text);
-          // setInput(""); // Input is already cleared in selectPdf handler or resetGame
-        } else {
-          console.warn(
-            "1. PDF_SELECTION_EFFECT: Selected PDF has paragraphs, but random_paragraph was undefined.",
-          );
-          setTarget("Selected PDF - error finding paragraph.");
-        }
-      } else {
-        console.warn(
-          "1. PDF_SELECTION_EFFECT: Selected PDF has no paragraphs or PDF not found.",
-        );
-        setTarget("Selected PDF has no paragraphs / not found.");
-      }
-    } else if (!selectedPdf && pdfsQuery.status === "success") {
-      // Handle case where PDF is deselected (selectedPdf becomes null)
-      // If you want to go back to boilerplate when a PDF is deselected:
-      // For now, let's assume the "INITIAL BOILERPLATE EFFECT" handles this if target becomes ""
-      console.log(
-        "PDF_SELECTION_EFFECT: No PDF selected (or query not ready). Target will be handled by boilerplate effect or resetGame.",
-      );
-    }
-  }, [selectedPdf, pdfsQuery.data, pdfsQuery.status]); // Dependencies: selectedPdf and the data/status of the query
-
-  // useGameStateMachine(input, target);
-
-  const resetGame = () => {
-    console.log("RESET_GAME: Called. Current selectedPdf:", selectedPdf);
-    setGameState("idle");
-    setInput(""); // Clear input
-
     if (selectedPdf && pdfsQuery.data && pdfsQuery.status === "success") {
       const pdf = pdfsQuery.data.find((p) => p.id === selectedPdf);
       if (pdf?.paragraphs?.length) {
         const random_paragraph_id = getRandomInt(pdf.paragraphs.length);
         const random_paragraph = pdf.paragraphs[random_paragraph_id];
         if (random_paragraph) {
-          console.log(
-            "3. RESET_GAME: Setting target from currently selected PDF.",
-          );
+          console.log("1. PDF_SELECTION_EFFECT: Setting target.");
           setTarget(random_paragraph.text);
+          // setInput("");
         } else {
-          setTarget("Error: PDF selected but no paragraph in resetGame.");
+          setTarget("Error 1A");
         }
       } else {
-        setTarget("Error: PDF selected but no paragraphs array in resetGame.");
+        setTarget("Error 1B");
       }
     } else {
-      const index = getRandomInt(boilerplateText.database.length);
-      console.log("4. RESET_GAME: Setting target from boilerplate.");
-      setTarget(boilerplateText.database[index]!);
+      console.log(
+        "PDF_SELECTION_EFFECT: Conditions not met to set target from PDF.",
+      );
     }
-    inputRef.current?.focus();
+  }, [selectedPdf, pdfsQuery.data, pdfsQuery.status]);
+
+  // // useGameStateMachine(input, target); // Already commented out
+
+  const resetGame = () => {
+    console.log(
+      "!!!! RESET_GAME CALLED !!!! Current selectedPdf:",
+      selectedPdf,
+      "Current gameState:",
+      gameState,
+    );
+    // setGameState("idle");
+    // setInput("");
+    // if (selectedPdf && pdfsQuery.data && pdfsQuery.status === 'success') {
+    //   console.log("3. RESET_GAME: Would set target from PDF.");
+    //   // const pdf = pdfsQuery.data.find((p) => p.id === selectedPdf); ... setTarget(...)
+    // } else {
+    //   console.log("4. RESET_GAME: Would set target from boilerplate.");
+    //   // const index = getRandomInt(boilerplateText.database.length); ... setTarget(...)
+    // }
+    // inputRef.current?.focus();
   };
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!(gameState == "stopped")) {
