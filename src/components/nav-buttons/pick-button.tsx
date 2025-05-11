@@ -57,7 +57,7 @@ export default function PickButton({ selectPdf }: PdfDrawerProps) {
                       "cursor-pointer rounded-md border p-3 text-sm transition-colors",
                       "text-zinc-800 dark:border-zinc-700 dark:text-zinc-200",
                       isSelected === id
-                        ? "bg-green-100 dark:bg-green-700"
+                        ? "bg-gray-100 dark:bg-gray-700"
                         : "hover:bg-zinc-100 dark:hover:bg-zinc-800",
                     )}
                     onClick={() => {
