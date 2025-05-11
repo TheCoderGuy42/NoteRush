@@ -112,11 +112,7 @@ function App() {
         );
         setTarget("Selected PDF has no paragraphs / not found by ID.");
       }
-    } else if (
-      !selectedPdf &&
-      target === "" &&
-      pdfsQuery.status !== "pending"
-    ) {
+    } else if (!selectedPdf && target === "") {
       // No PDF selected, target is empty, and query is not in initial pending state
       // (to avoid setting boilerplate before pdfsQuery might load and a selectedPdf from localStorage/previous state is applied)
       console.log("2. MASTER TARGET EFFECT: Setting boilerplate.");
