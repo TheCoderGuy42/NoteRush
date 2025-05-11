@@ -16,6 +16,22 @@ export const s3Upload = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const userId = ctx.session?.user.id;
+
+      // Debug logging to diagnose AWS credential issues
+      console.log("AWS ENV DEBUG:");
+      console.log("AWS_S3_REGION:", env.AWS_S3_REGION);
+      console.log(
+        "AWS_S3_ACCESS_KEY_ID:",
+        env.AWS_S3_ACCESS_KEY_ID
+          ? env.AWS_S3_ACCESS_KEY_ID.substring(0, 5) + "..."
+          : "MISSING",
+      );
+      console.log(
+        "AWS_S3_SECRET_ACCESS_KEY:",
+        env.AWS_S3_SECRET_ACCESS_KEY ? "***set***" : "***missing***",
+      );
+      console.log("AWS_S3_BUCKET_NAME:", env.AWS_S3_BUCKET_NAME);
+
       const s3Client = new S3Client({
         region: env.AWS_S3_REGION,
         credentials: {
