@@ -116,8 +116,8 @@ function App() {
       // No PDF selected, target is empty, and query is not in initial pending state
       // (to avoid setting boilerplate before pdfsQuery might load and a selectedPdf from localStorage/previous state is applied)
       console.log("2. MASTER TARGET EFFECT: Setting boilerplate.");
-      const index = getRandomInt(boilerplateText.database.length);
-      setTarget(boilerplateText.database[index]!);
+      const index = getRandomInt(boilerplateText.prod.length);
+      setTarget(boilerplateText.prod[index]!);
       // setInput(""); // Moved to selectPdf and resetGame
     } else {
       console.log(
@@ -157,8 +157,8 @@ function App() {
       }
     } else {
       console.log("4. RESET_GAME: Setting target from boilerplate.");
-      const index = getRandomInt(boilerplateText.database.length);
-      setTarget(boilerplateText.database[index]!);
+      const index = getRandomInt(boilerplateText.prod.length);
+      setTarget(boilerplateText.prod[index]!);
     }
     inputRef.current?.focus();
   };
