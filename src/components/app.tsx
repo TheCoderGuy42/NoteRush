@@ -63,6 +63,7 @@ function App() {
 
         if (random_paragraph) {
           setTarget(random_paragraph.text);
+          setInput("");
         } else {
           setTarget("Selected pdf has no text (should not be possible)");
         }
@@ -72,6 +73,7 @@ function App() {
     } else {
       const index = getRandomInt(boilerplateText.database.length);
       setTarget(boilerplateText.database[index]!); // won't be undefined since i'm getting a rand int within len
+      setInput("");
     }
   }, [pdfsQuery.data, selectedPdf]);
 
