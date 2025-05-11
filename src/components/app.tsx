@@ -56,62 +56,83 @@ function App() {
 
   const selectPdf = (pdfId: number) => {
     setSelectedPdf(pdfId);
-    resetGame();
+    setGameState("idle");
   };
 
+  // This useEffect is ONLY for loading the initial boilerplate text ONCE
+  // or if all selection is cleared and we need to go back to boilerplate.
   useEffect(() => {
-    if (pdfsQuery.data && selectedPdf) {
-      const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
+    if (!selectedPdf && !target && !pdfsQuery.isLoading) {
+      // Check isLoading to avoid race with pdfsQuery
+      console.log(
+        "INITIAL/BOILERPLATE EFFECT: No PDF selected, target is empty. Setting boilerplate.",
+      );
+      const index = getRandomInt(boilerplateText.database.length);
+      setTarget(boilerplateText.database[index]!);
+      setInput("");
+    }
+  }, [selectedPdf, target, pdfsQuery.isLoading]); // Note: target is here, but condition prevents loop
+
+  useEffect(() => {
+    console.log(
+      "PDF SELECTION EFFECT: Triggered. selectedPdf:",
+      selectedPdf,
+      "pdfsQuery.data available:",
+      !!pdfsQuery.data,
+    );
+    if (selectedPdf && pdfsQuery.data) {
+      const pdf = pdfsQuery.data.find((p) => p.id === selectedPdf);
       if (pdf?.paragraphs?.length) {
         const random_paragraph_id = getRandomInt(pdf.paragraphs.length);
         const random_paragraph = pdf.paragraphs[random_paragraph_id];
-
         if (random_paragraph) {
-          console.log("1. ");
+          console.log(
+            "1. Setting target from NEWLY selected PDF's random paragraph.",
+          );
           setTarget(random_paragraph.text);
-          setInput("");
+          setInput(""); // Reset input when target changes from PDF
         } else {
-          setTarget("Selected pdf has no text (should not be possible)");
+          setTarget("Selected PDF has text but no random paragraph found.");
+          setInput("");
         }
       } else {
-        setTarget("Selected pdf has no paragraphs");
+        setTarget("Selected PDF has no paragraphs or was not found.");
+        setInput("");
       }
-    } else if (!target) {
-      // Only set from boilerplate if target is empty
-      const index = getRandomInt(boilerplateText.database.length);
-      console.log("2. ");
-      setTarget(boilerplateText.database[index]!); // won't be undefined since i'm getting a rand int within len
-      setInput("");
     }
-  }, [pdfsQuery.data, selectedPdf, target]);
+    // NO ELSE BRANCH HERE to set boilerplate, that's handled by the other useEffect or resetGame
+  }, [selectedPdf, pdfsQuery.data]);
 
   useGameStateMachine(input, target);
 
   const resetGame = () => {
+    console.log("RESET_GAME: Called. Current selectedPdf:", selectedPdf);
     setGameState("idle");
     setInput("");
-    // setTarget("");
-    inputRef.current?.focus();
-    // re-fresh pdf
-    if (!selectedPdf) {
-      const index = getRandomInt(boilerplateText.database.length);
-      console.log("4. ");
-      setTarget(boilerplateText.database[index]!); // won't be undefined since i'm getting a rand int within len
-      inputRef.current?.focus();
-    } else {
-      if (pdfsQuery.data) {
-        const pdf = pdfsQuery.data.find((pdf) => pdf.id === selectedPdf);
-        if (pdf?.paragraphs?.length) {
-          const rand_para_id = getRandomInt(pdf.paragraphs.length);
-          const rand_para = pdf.paragraphs[rand_para_id];
-          if (rand_para) {
-            console.log("3. ");
-            setTarget(rand_para.text);
-            inputRef.current?.focus();
-          }
+    // Now, resetGame decides the target based on current selectedPdf
+    if (selectedPdf && pdfsQuery.data) {
+      const pdf = pdfsQuery.data.find((p) => p.id === selectedPdf);
+      if (pdf?.paragraphs?.length) {
+        const random_paragraph_id = getRandomInt(pdf.paragraphs.length);
+        const random_paragraph = pdf.paragraphs[random_paragraph_id];
+        if (random_paragraph) {
+          console.log(
+            "3. resetGame - Setting target from currently selected PDF.",
+          );
+          setTarget(random_paragraph.text);
+        } else {
+          setTarget("Error: PDF selected but no paragraph in resetGame.");
         }
+      } else {
+        setTarget("Error: PDF selected but no paragraphs array in resetGame.");
       }
+    } else {
+      // No PDF selected, or pdfsQuery.data not yet available
+      const index = getRandomInt(boilerplateText.database.length);
+      console.log("4. resetGame - Setting target from boilerplate.");
+      setTarget(boilerplateText.database[index]!);
     }
+    inputRef.current?.focus();
   };
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
