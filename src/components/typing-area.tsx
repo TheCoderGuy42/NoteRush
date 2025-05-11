@@ -60,11 +60,6 @@ function TypingArea(props: TypingAreaInt) {
 
   const { output: display, mistakes } = useRenderer(target, input);
 
-  // when it gets mounted and unmounted
-  if (gameState === "stopped") {
-    setScrollOffset(0);
-  }
-
   useEffect(() => {
     if (input === "" || !textContainerRef.current) {
       if (scrollOffset !== 0) {
@@ -96,6 +91,10 @@ function TypingArea(props: TypingAreaInt) {
     if (desiredOffset !== scrollOffset) {
       setScrollOffset(desiredOffset);
     }
+
+    return () => {
+      setScrollOffset(0);
+    };
   }, [input, target, scrollOffset]);
 
   return (
