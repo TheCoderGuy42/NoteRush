@@ -65,7 +65,7 @@ export default function PickButton({ selectPdf }: PdfDrawerProps) {
                       setSelected(id);
                     }}
                   >
-                    <div className="mb-1 flex justify-between font-medium">
+                    <div className="mb-1 flex justify-between font-mono">
                       <span>{title ? title : "No title"}</span>
                       <span className="text-xs text-zinc-500 dark:text-zinc-400">
                         ({paragraphs.length} paras)
