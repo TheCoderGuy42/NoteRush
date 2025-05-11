@@ -58,7 +58,7 @@ function UppyS3Uploader({
             });
 
             // CRITICAL FIX HERE: Check if signedUrl is MISSING or not valid
-            if (!result || !result.signedUrl) {
+            if (!result.signedUrl) {
               const errorMsg = "Invalid or missing pre-signed URL from server.";
               toast.error(errorMsg);
               console.error(
