@@ -57,6 +57,11 @@ function TypingArea(props: TypingAreaInt) {
 
   const { output: display, mistakes } = useRenderer(target, input);
 
+  // when it gets mounted and unmounted
+  useEffect(() => {
+    setScrollOffset(0);
+  }, []);
+
   useEffect(() => {
     if (input === "" || !textContainerRef.current) {
       if (scrollOffset !== 0) {
