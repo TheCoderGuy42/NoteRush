@@ -43,6 +43,7 @@ export default function RecordList({ resetGame }: RecordListProps) {
   const avgTime = totalTime / data.length;
   const avgMistakes = totalMistakes / data.length;
   const avgAccuracy = totalAccuracy / data.length;
+  const numRecords = data.length;
 
   return (
     <div className="w-full py-4">
@@ -78,6 +79,9 @@ export default function RecordList({ resetGame }: RecordListProps) {
             averages
           </h3>
           <div className="flex flex-col gap-1">
+            <div className="flex justify-between">
+              <span>{numRecords}</span>
+            </div>
             <div className="flex justify-between">
               <span>{avgWPM.toFixed(2)} wpm</span>
             </div>

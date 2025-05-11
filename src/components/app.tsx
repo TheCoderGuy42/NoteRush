@@ -228,7 +228,7 @@ function App() {
         </div>
       )}
 
-      {gameState === "stopped" && (
+      {gameState === "stopped" && session.data && (
         <>
           <RecordList resetGame={resetGame} />
         </>
