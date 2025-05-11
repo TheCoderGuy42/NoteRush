@@ -1,8 +1,10 @@
 // components/RecordList.tsx
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { api } from "@/trpc/react";
 import { useRecordStore } from "@/context/store";
+import { useSession } from "@/server/auth/react-client";
+import type { ActualRecord } from "@/context/data_types";
 
 interface RecordListProps {
   resetGame: () => void;
@@ -10,18 +12,37 @@ interface RecordListProps {
 
 export default function RecordList({ resetGame }: RecordListProps) {
   const gameState = useRecordStore((state) => state.status);
+  const session = useSession();
+  const [localRecords, setLocalRecords] = useState<ActualRecord[]>([]);
+
+  // Load local records when not signed in
+  useEffect(() => {
+    if (!session.data) {
+      try {
+        const storedRecords = localStorage.getItem("typingRecords");
+        if (storedRecords) {
+          setLocalRecords(JSON.parse(storedRecords));
+        }
+      } catch (error) {
+        console.error("Error loading records from local storage:", error);
+      }
+    }
+  }, [session.data]);
 
   const { data, isLoading } = api.typingEntry.getAll.useQuery(undefined, {
-    enabled: gameState === "stopped",
+    enabled: gameState === "stopped" && !!session.data,
   });
 
-  if (isLoading) {
+  // Use database records if signed in, otherwise use local records
+  const records = session.data ? data : localRecords;
+
+  if (session.data && isLoading) {
     return (
       <p className="py-4 text-center text-sm text-gray-500">Loading records…</p>
     );
   }
 
-  if (!data || data.length === 0) {
+  if (!records || records.length === 0) {
     return (
       <p className="py-4 text-center text-sm text-gray-500">No data yet.</p>
     );
@@ -32,18 +53,18 @@ export default function RecordList({ resetGame }: RecordListProps) {
   let totalMistakes = 0;
   let totalAccuracy = 0;
 
-  data.forEach(({ wpm, time, mistakes, accuracy }) => {
+  records.forEach(({ wpm, time, mistakes, accuracy }) => {
     totalWpm += wpm;
     totalTime += time;
     totalMistakes += mistakes;
     totalAccuracy += accuracy;
   });
 
-  const avgWPM = totalWpm / data.length;
-  const avgTime = totalTime / data.length;
-  const avgMistakes = totalMistakes / data.length;
-  const avgAccuracy = totalAccuracy / data.length;
-  const numRecords = data.length;
+  const avgWPM = totalWpm / records.length;
+  const avgTime = totalTime / records.length;
+  const avgMistakes = totalMistakes / records.length;
+  const avgAccuracy = totalAccuracy / records.length;
+  const numRecords = records.length;
 
   return (
     <div className="w-full py-4">
@@ -60,7 +81,7 @@ export default function RecordList({ resetGame }: RecordListProps) {
             </button>
           </div>
           <ul className="divide-y divide-gray-200 dark:divide-zinc-700">
-            {data.map(({ id, wpm, time, mistakes, accuracy }) => (
+            {records.map(({ id, wpm, time, mistakes, accuracy }) => (
               <li
                 key={id}
                 className="grid grid-cols-[6rem_5rem_4rem_5rem] gap-x-4 py-2 text-sm text-gray-600 dark:text-gray-300"

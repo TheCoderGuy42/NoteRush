@@ -180,6 +180,35 @@ function App() {
     return s === "running" || s === "idle";
   };
 
+  useEffect(() => {
+    if (gameState === "stopped") {
+      const record = {
+        id: Date.now(), // Generate a unique ID for local storage
+        wpm: useRecordStore.getState().wpm,
+        time: useRecordStore.getState().time,
+        mistakes: useRecordStore.getState().mistakes,
+        accuracy: useRecordStore.getState().accuracy,
+      };
+
+      // Only save to local storage if not signed in (records are saved to database in StatusBar component)
+      if (!session.data) {
+        try {
+          const existingRecordsJson = localStorage.getItem("typingRecords");
+          const existingRecords = existingRecordsJson
+            ? JSON.parse(existingRecordsJson)
+            : [];
+
+          // Add new record to the beginning of the array (for newest first)
+          const updatedRecords = [record, ...existingRecords].slice(0, 50); // Limit to 50 records
+
+          localStorage.setItem("typingRecords", JSON.stringify(updatedRecords));
+        } catch (error) {
+          console.error("Error saving to local storage:", error);
+        }
+      }
+    }
+  }, [gameState, session.data]);
+
   return (
     <>
       <Toaster position="top-right" />
@@ -228,7 +257,7 @@ function App() {
         </div>
       )}
 
-      {gameState === "stopped" && session.data && (
+      {gameState === "stopped" && (
         <>
           <RecordList resetGame={resetGame} />
         </>
