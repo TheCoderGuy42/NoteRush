@@ -24,12 +24,12 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
-      {/* <head>
+      <head>
         <script
           crossOrigin="anonymous"
           src="//unpkg.com/react-scan/dist/auto.global.js"
         />
-      </head> */}
+      </head>
       <body className="bg-background min-h-screen font-sans antialiased">
         <PostHogProvider>
           <ThemeProvider

@@ -148,7 +148,6 @@ function UppyS3Uploader({
           return;
         }
         onS3UploadSuccess({ filename: file.name, s3Key });
-        toast.success(`"${file.name}" uploaded. Starting server processing.`);
       });
 
       uppy.on("upload-error", (file, error, response) => {

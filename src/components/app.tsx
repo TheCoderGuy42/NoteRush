@@ -90,7 +90,7 @@ function App() {
   const resetGame = () => {
     setGameState("idle");
     setInput("");
-    setTarget("");
+    // setTarget("");
     inputRef.current?.focus();
     // re-fresh pdf
     if (!selectedPdf) {
