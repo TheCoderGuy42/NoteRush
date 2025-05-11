@@ -82,7 +82,7 @@ export default function RecordList({ resetGame }: RecordListProps) {
           <div className="flex justify-center">
             <button
               onClick={resetGame}
-              className={`w-full cursor-pointer border border-gray-300 text-center font-mono text-xs text-gray-300 transition-colors hover:text-gray-500 dark:border-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-200`}
+              className="w-full cursor-pointer border border-gray-300 text-center font-mono text-xs text-gray-300 transition-colors hover:text-gray-500 dark:cursor-pointer dark:border-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-200"
             >
               reset
             </button>
