@@ -67,6 +67,7 @@ function App() {
         const random_paragraph = pdf.paragraphs[random_paragraph_id];
 
         if (random_paragraph) {
+          console.log("1. ");
           setTarget(random_paragraph.text);
           setInput("");
         } else {
@@ -77,6 +78,7 @@ function App() {
       }
     } else {
       const index = getRandomInt(boilerplateText.database.length);
+      console.log("2. ");
       setTarget(boilerplateText.database[index]!); // won't be undefined since i'm getting a rand int within len
       setInput("");
     }
@@ -92,6 +94,7 @@ function App() {
     // re-fresh pdf
     if (!selectedPdf) {
       const index = getRandomInt(boilerplateText.database.length);
+      console.log("4. ");
       setTarget(boilerplateText.database[index]!); // won't be undefined since i'm getting a rand int within len
     } else {
       if (pdfsQuery.data) {
@@ -100,6 +103,7 @@ function App() {
           const rand_para_id = getRandomInt(pdf.paragraphs.length);
           const rand_para = pdf.paragraphs[rand_para_id];
           if (rand_para) {
+            console.log("3. ");
             setTarget(rand_para.text);
           }
         }

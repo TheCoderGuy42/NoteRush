@@ -7,6 +7,7 @@ import { TRPCReactProvider } from "@/trpc/react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { PostHogProvider } from "@/components/PostHogProvider";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Note Rush",
@@ -25,10 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable}`} suppressHydrationWarning>
       <head>
-        <script
-          crossOrigin="anonymous"
-          src="//unpkg.com/react-scan/dist/auto.global.js"
-        />
+        <Script src="//unpkg.com/react-scan/dist/auto.global.js" />
       </head>
       <body className="bg-background min-h-screen font-sans antialiased">
         <PostHogProvider>
