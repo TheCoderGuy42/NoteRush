@@ -53,75 +53,116 @@ function App() {
     refetchOnReconnect: false,
     enabled: !!session.data,
   });
+  console.log(
+    "--- APP RENDER START --- selectedPdf:",
+    selectedPdf,
+    "target:",
+    target.substring(0, 10),
+    "gameState:",
+    gameState,
+    "input:",
+    input,
+  );
+
   const selectPdf = (pdfId: number) => {
     console.log("SELECT_PDF_HANDLER: Called with pdfId:", pdfId);
+    // Only update selectedPdf. Let the effect handle the rest.
     setSelectedPdf(pdfId);
-    // setGameState("idle"); // Temporarily remove to see if it's part of the issue
-    // setInput("");       // Temporarily remove
+    // Also, reset input when a new PDF is selected.
+    // And set game state to idle, assuming new text means new game.
+    setInput("");
+    setGameState("idle");
   };
 
   useEffect(() => {
-    if (
-      !selectedPdf &&
-      target === "" &&
-      !pdfsQuery.isLoading &&
-      pdfsQuery.status !== "pending"
-    ) {
-      console.log("INITIAL BOILERPLATE EFFECT: Setting boilerplate.");
-      const index = getRandomInt(boilerplateText.database.length);
-      setTarget(boilerplateText.database[index]!);
-      // setInput("");
-    }
-  }, [selectedPdf, target, pdfsQuery.isLoading, pdfsQuery.status]);
-
-  useEffect(() => {
     console.log(
-      "PDF SELECTION EFFECT: Triggered. selectedPdf:",
+      "MASTER TARGET EFFECT: Triggered. selectedPdf:",
       selectedPdf,
       "pdfsQuery.status:",
       pdfsQuery.status,
+      "current target empty:",
+      target === "",
     );
+
+    if (selectedPdf && pdfsQuery.data && pdfsQuery.status === "success") {
+      // A PDF is selected and data is ready
+      console.log(
+        "MASTER TARGET EFFECT: Condition for PDF met. selectedPdf ID:",
+        selectedPdf,
+      );
+      const pdf = pdfsQuery.data.find((p) => p.id === selectedPdf);
+      if (pdf?.paragraphs?.length) {
+        const random_paragraph_id = getRandomInt(pdf.paragraphs.length);
+        const random_paragraph = pdf.paragraphs[random_paragraph_id];
+        if (random_paragraph) {
+          console.log("1. MASTER TARGET EFFECT: Setting target from PDF.");
+          // Check if target is already set to this specific paragraph to avoid loop if possible,
+          // though random nature makes this hard. For now, just set it.
+          setTarget(random_paragraph.text);
+          // setInput(""); // Moved to selectPdf and resetGame
+        } else {
+          console.error(
+            "MASTER TARGET EFFECT: PDF has paragraphs, but random_paragraph is undefined!",
+          );
+          setTarget("Error: Could not get random paragraph.");
+        }
+      } else {
+        console.warn(
+          "MASTER TARGET EFFECT: Selected PDF found but has no paragraphs, or PDF not found by ID.",
+        );
+        setTarget("Selected PDF has no paragraphs / not found by ID.");
+      }
+    } else if (
+      !selectedPdf &&
+      target === "" &&
+      pdfsQuery.status !== "pending"
+    ) {
+      // No PDF selected, target is empty, and query is not in initial pending state
+      // (to avoid setting boilerplate before pdfsQuery might load and a selectedPdf from localStorage/previous state is applied)
+      console.log("2. MASTER TARGET EFFECT: Setting boilerplate.");
+      const index = getRandomInt(boilerplateText.database.length);
+      setTarget(boilerplateText.database[index]!);
+      // setInput(""); // Moved to selectPdf and resetGame
+    } else {
+      console.log(
+        "MASTER TARGET EFFECT: No action taken (e.g., PDF deselected but target not empty, or query pending).",
+      );
+    }
+    // Dependencies:
+    // - selectedPdf: When this changes, we want to load a new PDF.
+    // - pdfsQuery.data, pdfsQuery.status: When PDF data/status changes, re-evaluate.
+    // - `target` is INTENTIONALLY OMITTED to break the loop of this effect setting target and then re-running because target changed.
+    //   The conditions inside should handle not re-setting target unnecessarily.
+  }, [selectedPdf, pdfsQuery.data, pdfsQuery.status]); // CRITICAL: NO `target` HERE!
+
+  const resetGame = () => {
+    console.log("!!!! RESET_GAME CALLED !!!!");
+    setGameState("idle");
+    setInput("");
+
+    // resetGame always provides a new target
     if (selectedPdf && pdfsQuery.data && pdfsQuery.status === "success") {
       const pdf = pdfsQuery.data.find((p) => p.id === selectedPdf);
       if (pdf?.paragraphs?.length) {
         const random_paragraph_id = getRandomInt(pdf.paragraphs.length);
         const random_paragraph = pdf.paragraphs[random_paragraph_id];
         if (random_paragraph) {
-          console.log("1. PDF_SELECTION_EFFECT: Setting target.");
+          console.log(
+            "3. RESET_GAME: Setting target from currently selected PDF.",
+          );
           setTarget(random_paragraph.text);
-          // setInput("");
         } else {
-          setTarget("Error 1A");
+          setTarget("Error in resetGame - PDF para undefined.");
         }
       } else {
-        setTarget("Error 1B");
+        setTarget("Error in resetGame - PDF no paras.");
       }
     } else {
-      console.log(
-        "PDF_SELECTION_EFFECT: Conditions not met to set target from PDF.",
-      );
+      console.log("4. RESET_GAME: Setting target from boilerplate.");
+      const index = getRandomInt(boilerplateText.database.length);
+      setTarget(boilerplateText.database[index]!);
     }
-  }, [selectedPdf, pdfsQuery.data, pdfsQuery.status]);
-
-  // // useGameStateMachine(input, target); // Already commented out
-
-  const resetGame = () => {
-    console.log(
-      "!!!! RESET_GAME CALLED !!!! Current selectedPdf:",
-      selectedPdf,
-      "Current gameState:",
-      gameState,
-    );
-    // setGameState("idle");
-    // setInput("");
-    // if (selectedPdf && pdfsQuery.data && pdfsQuery.status === 'success') {
-    //   console.log("3. RESET_GAME: Would set target from PDF.");
-    //   // const pdf = pdfsQuery.data.find((p) => p.id === selectedPdf); ... setTarget(...)
-    // } else {
-    //   console.log("4. RESET_GAME: Would set target from boilerplate.");
-    //   // const index = getRandomInt(boilerplateText.database.length); ... setTarget(...)
-    // }
-    // inputRef.current?.focus();
+    inputRef.current?.focus();
   };
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!(gameState == "stopped")) {
