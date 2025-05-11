@@ -76,13 +76,14 @@ function App() {
       } else {
         setTarget("Selected pdf has no paragraphs");
       }
-    } else {
+    } else if (!target) {
+      // Only set from boilerplate if target is empty
       const index = getRandomInt(boilerplateText.database.length);
       console.log("2. ");
       setTarget(boilerplateText.database[index]!); // won't be undefined since i'm getting a rand int within len
       setInput("");
     }
-  }, [pdfsQuery.data, selectedPdf]);
+  }, [pdfsQuery.data, selectedPdf, target]);
 
   useGameStateMachine(input, target);
 
