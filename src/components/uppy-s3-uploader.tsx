@@ -5,11 +5,13 @@ import React, { useEffect, useRef, useState } from "react";
 import Uppy, { type UppyFile, type Meta, type Body } from "@uppy/core";
 import AwsS3 from "@uppy/aws-s3";
 import { Dashboard as UppyReactDashboard } from "@uppy/react";
+import GoogleDrive from "@uppy/google-drive";
 import { api } from "@/trpc/react"; // Only for getPresignedUrlAsync
 import toast from "react-hot-toast";
 
 import "@uppy/core/dist/style.min.css";
 import "@uppy/dashboard/dist/style.min.css";
+import "@uppy/google-drive/dist/style.min.css";
 
 interface UppyS3UploaderProps {
   onS3UploadSuccess: (data: { filename: string; s3Key: string }) => void;
@@ -135,6 +137,11 @@ function UppyS3Uploader({
         },
       } as any); // Removed 'as any' - ensure your tRPC type for getPresignedUrl matches expected return
 
+      // Add Google Drive plugin using Uppy's hosted companion
+      uppy.use(GoogleDrive, {
+        companionUrl: "https://companion.uppy.io",
+      });
+
       uppy.on("upload-success", (file) => {
         if (!file?.name) return;
         const s3Key = file.meta.s3Key as string;
@@ -193,6 +200,7 @@ function UppyS3Uploader({
     <UppyReactDashboard
       uppy={uppyRef.current}
       proudlyDisplayPoweredByUppy={false}
+      plugins={["GoogleDrive"]}
     />
   );
 }
