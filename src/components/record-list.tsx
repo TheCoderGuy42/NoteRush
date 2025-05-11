@@ -15,11 +15,11 @@ export default function RecordList({ resetGame }: RecordListProps) {
   const session = useSession();
   const [localRecords, setLocalRecords] = useState<ActualRecord[]>([]);
 
-  // Load local records when not signed in or when game state changes
   useEffect(() => {
     if (!session.data) {
       try {
         const storedRecords = localStorage.getItem("typingRecords");
+        console.log("stored records " + storedRecords);
         if (storedRecords) {
           setLocalRecords(JSON.parse(storedRecords));
         }

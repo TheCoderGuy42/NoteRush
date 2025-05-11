@@ -182,12 +182,9 @@ function App() {
 
   useEffect(() => {
     if (gameState === "stopped") {
-      // Only save to local storage if not signed in
-      // (records are saved to database in StatusBar component)
       if (!session.data) {
-        // Get fresh data from store
         const freshRecord = {
-          id: Date.now(), // Generate a unique ID for local storage
+          id: Date.now(),
           wpm: useRecordStore.getState().wpm,
           time: useRecordStore.getState().time,
           mistakes: useRecordStore.getState().mistakes,
@@ -197,16 +194,13 @@ function App() {
         console.log("Saving to local storage:", freshRecord);
 
         try {
-          // Read existing records
           const existingRecordsJson = localStorage.getItem("typingRecords");
           const existingRecords = existingRecordsJson
             ? JSON.parse(existingRecordsJson)
             : [];
 
-          // Add new record to the beginning of the array (for newest first)
           const updatedRecords = [freshRecord, ...existingRecords].slice(0, 50); // Limit to 50 records
 
-          // Save back to local storage
           localStorage.setItem("typingRecords", JSON.stringify(updatedRecords));
         } catch (error) {
           console.error("Error saving to local storage:", error);
