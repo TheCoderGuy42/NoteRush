@@ -14,7 +14,7 @@ export default function RecordList({ resetGame }: RecordListProps) {
   const localRecords = useRecordStore((state) => state.localRecords);
   const session = useSession();
 
-  // No longer need useEffect for localStorage - we get records directly from Zustand
+  //  No longer need useEffect for localStorage - we get records directly from Zustand
 
   const { data: dbRecords, isLoading: isLoadingDbRecords } =
     api.typingEntry.getAll.useQuery(undefined, {
