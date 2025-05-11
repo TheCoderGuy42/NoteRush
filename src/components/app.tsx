@@ -135,6 +135,8 @@ function App() {
     //   The conditions inside should handle not re-setting target unnecessarily.
   }, [selectedPdf, pdfsQuery.data, pdfsQuery.status]); // CRITICAL: NO `target` HERE!
 
+  useGameStateMachine(input, target);
+
   const resetGame = () => {
     console.log("!!!! RESET_GAME CALLED !!!!");
     setGameState("idle");
