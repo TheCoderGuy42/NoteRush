@@ -250,6 +250,24 @@ function App() {
     }
   }, [session.data]);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Check if Enter was pressed AND gameState is "stopped"
+      if (event.key === "Enter" && gameState === "stopped") {
+        console.log("Enter pressed while game was stopped. Resetting game.");
+        event.preventDefault(); // Prevent any default Enter behavior (like form submission if applicable)
+        resetGame();
+      }
+    };
+
+    // Add event listener to the window
+    window.addEventListener("keydown", handleKeyDown);
+
+    // Cleanup function: remove event listener when component unmounts or before effect re-runs
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [gameState, resetGame]);
   return (
     <>
       <Toaster position="top-right" />

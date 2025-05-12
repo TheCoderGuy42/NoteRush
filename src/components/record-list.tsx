@@ -75,7 +75,6 @@ export default function RecordList({ resetGame }: RecordListProps) {
 
   return (
     <div className="w-full py-4">
-      {" "}
       <div className="relative mx-auto w-[23rem]">
         <section className="w-full">
           <button
