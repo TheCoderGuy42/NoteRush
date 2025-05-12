@@ -1,6 +1,4 @@
-# TypeTrack - Modern Typing Practice App
-
-![TypeTrack Logo](public/logo.png)
+# Note Rush - Modern Typing Practice App
 
 TypeTrack is a modern typing practice application designed to help you improve your typing speed and accuracy through customizable exercises. Practice with pre-written passages on database topics, upload your own PDFs, and track your progress over time.
 
@@ -30,61 +28,6 @@ TypeTrack is built with modern web technologies:
 - **State Management**: [Zustand](https://github.com/pmndrs/zustand)
 - **PDF Processing**: Custom parsing and text extraction
 
-## 📋 Getting Started
-
-### Prerequisites
-
-- Node.js 18.x or later
-- PostgreSQL database
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/yourusername/next-typing-app.git
-   cd next-typing-app
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. Set up environment variables:
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Fill in your database URL and other required environment variables.
-
-4. Set up the database:
-
-   ```bash
-   # Start a local PostgreSQL database (optional script provided)
-   ./start-database.sh
-
-   # Run migrations
-   npm run db:migrate
-   # or
-   yarn db:migrate
-   ```
-
-5. Start the development server:
-
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-6. Open [http://localhost:3000](http://localhost:3000) to see the application.
-
 ## 💻 Usage
 
 1. **Create an account** or log in to start tracking your progress
@@ -94,20 +37,6 @@ TypeTrack is built with modern web technologies:
 5. **Upload PDFs** to practice with your own content
 6. **Track progress** over time to see your improvement
 
-## 🔧 Development
-
-```bash
-# Run tests
-npm run test
-
-# Check types
-npm run typecheck
-
-# Lint code
-npm run lint
-
-# Format code
-npm run format:write
 ```
 
 ## 📊 Database Schema
