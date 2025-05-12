@@ -53,66 +53,30 @@ function App() {
     refetchOnReconnect: false,
     enabled: !!session.data,
   });
-  console.log(
-    "--- APP RENDER START --- selectedPdf:",
-    selectedPdf,
-    "target:",
-    target.substring(0, 10),
-    "gameState:",
-    gameState,
-    "input:",
-    input,
-  );
 
   const selectPdf = (pdfId: number) => {
-    console.log("SELECT_PDF_HANDLER: Called with pdfId:", pdfId);
     setSelectedPdf(pdfId);
     setInput("");
     setGameState("idle");
   };
 
   useEffect(() => {
-    console.log(
-      "MASTER TARGET EFFECT: Triggered. selectedPdf:",
-      selectedPdf,
-      "pdfsQuery.status:",
-      pdfsQuery.status,
-      "current target empty:",
-      target === "",
-    );
-
     if (selectedPdf && pdfsQuery.data && pdfsQuery.status === "success") {
-      console.log(
-        "MASTER TARGET EFFECT: Condition for PDF met. selectedPdf ID:",
-        selectedPdf,
-      );
       const pdf = pdfsQuery.data.find((p) => p.id === selectedPdf);
       if (pdf?.paragraphs?.length) {
         const random_paragraph_id = getRandomInt(pdf.paragraphs.length);
         const random_paragraph = pdf.paragraphs[random_paragraph_id];
         if (random_paragraph) {
-          console.log("1. MASTER TARGET EFFECT: Setting target from PDF.");
           setTarget(random_paragraph.text);
         } else {
-          console.error(
-            "MASTER TARGET EFFECT: PDF has paragraphs, but random_paragraph is undefined!",
-          );
           setTarget("Error: Could not get random paragraph.");
         }
       } else {
-        console.warn(
-          "MASTER TARGET EFFECT: Selected PDF found but has no paragraphs, or PDF not found by ID.",
-        );
         setTarget("Selected PDF has no paragraphs / not found by ID.");
       }
     } else if (!selectedPdf && target === "") {
-      console.log("2. MASTER TARGET EFFECT: Setting boilerplate.");
       const index = getRandomInt(boilerplateText.prod.length);
       setTarget(boilerplateText.prod[index]!);
-    } else {
-      console.log(
-        "MASTER TARGET EFFECT: No action taken (e.g., PDF deselected but target not empty, or query pending).",
-      );
     }
     // Dependencies:
     // - selectedPdf: When this changes, we want to load a new PDF.
@@ -124,7 +88,6 @@ function App() {
   useGameStateMachine(input, target);
 
   const resetGame = () => {
-    console.log("!!!! RESET_GAME CALLED !!!!");
     setGameState("idle");
     setInput("");
 
@@ -134,9 +97,6 @@ function App() {
         const random_paragraph_id = getRandomInt(pdf.paragraphs.length);
         const random_paragraph = pdf.paragraphs[random_paragraph_id];
         if (random_paragraph) {
-          console.log(
-            "3. RESET_GAME: Setting target from currently selected PDF.",
-          );
           setTarget(random_paragraph.text);
         } else {
           setTarget("Error in resetGame - PDF para undefined.");
@@ -145,7 +105,6 @@ function App() {
         setTarget("Error in resetGame - PDF no paras.");
       }
     } else {
-      console.log("4. RESET_GAME: Setting target from boilerplate.");
       const index = getRandomInt(boilerplateText.prod.length);
       setTarget(boilerplateText.prod[index]!);
     }
@@ -169,13 +128,11 @@ function App() {
         setUppyOpen(false);
       },
       onSuccess: (data, variables) => {
-        console.log("Successfully processed PDF:", data);
         toast.success(`"${variables.filename}" processed and added!`);
         void utils.pdfProcessor.get.invalidate();
         void utils.limits.isAbovePdfLimit.invalidate();
       },
       onError: (error, variables) => {
-        console.error("Error processing PDF:", error);
         toast.error(
           `Failed to process "${variables.filename}": ${error.message}`,
         );
