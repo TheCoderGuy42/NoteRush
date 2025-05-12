@@ -66,10 +66,7 @@ function App() {
 
   const selectPdf = (pdfId: number) => {
     console.log("SELECT_PDF_HANDLER: Called with pdfId:", pdfId);
-    // Only update selectedPdf. Let the effect handle the rest.
     setSelectedPdf(pdfId);
-    // Also, reset input when a new PDF is selected.
-    // And set game state to idle, assuming new text means new game.
     setInput("");
     setGameState("idle");
   };
@@ -85,7 +82,6 @@ function App() {
     );
 
     if (selectedPdf && pdfsQuery.data && pdfsQuery.status === "success") {
-      // A PDF is selected and data is ready
       console.log(
         "MASTER TARGET EFFECT: Condition for PDF met. selectedPdf ID:",
         selectedPdf,
@@ -96,10 +92,7 @@ function App() {
         const random_paragraph = pdf.paragraphs[random_paragraph_id];
         if (random_paragraph) {
           console.log("1. MASTER TARGET EFFECT: Setting target from PDF.");
-          // Check if target is already set to this specific paragraph to avoid loop if possible,
-          // though random nature makes this hard. For now, just set it.
           setTarget(random_paragraph.text);
-          // setInput(""); // Moved to selectPdf and resetGame
         } else {
           console.error(
             "MASTER TARGET EFFECT: PDF has paragraphs, but random_paragraph is undefined!",
@@ -113,12 +106,9 @@ function App() {
         setTarget("Selected PDF has no paragraphs / not found by ID.");
       }
     } else if (!selectedPdf && target === "") {
-      // No PDF selected, target is empty, and query is not in initial pending state
-      // (to avoid setting boilerplate before pdfsQuery might load and a selectedPdf from localStorage/previous state is applied)
       console.log("2. MASTER TARGET EFFECT: Setting boilerplate.");
       const index = getRandomInt(boilerplateText.prod.length);
       setTarget(boilerplateText.prod[index]!);
-      // setInput(""); // Moved to selectPdf and resetGame
     } else {
       console.log(
         "MASTER TARGET EFFECT: No action taken (e.g., PDF deselected but target not empty, or query pending).",
@@ -129,7 +119,7 @@ function App() {
     // - pdfsQuery.data, pdfsQuery.status: When PDF data/status changes, re-evaluate.
     // - `target` is INTENTIONALLY OMITTED to break the loop of this effect setting target and then re-running because target changed.
     //   The conditions inside should handle not re-setting target unnecessarily.
-  }, [selectedPdf, pdfsQuery.data, pdfsQuery.status]); // CRITICAL: NO `target` HERE!
+  }, [selectedPdf, pdfsQuery.data, pdfsQuery.status]);
 
   useGameStateMachine(input, target);
 
@@ -138,7 +128,6 @@ function App() {
     setGameState("idle");
     setInput("");
 
-    // resetGame always provides a new target
     if (selectedPdf && pdfsQuery.data && pdfsQuery.status === "success") {
       const pdf = pdfsQuery.data.find((p) => p.id === selectedPdf);
       if (pdf?.paragraphs?.length) {
@@ -174,10 +163,10 @@ function App() {
         toast.loading(
           `Processing PDF: ${variables.filename}... This may take a moment.`,
           {
-            id: "pdf-backend-process", // Unique ID for this toast
+            id: "pdf-backend-process", // unique ID for this toast
           },
         );
-        setUppyOpen(false); // Optionally close Uppy modal when backend processing starts
+        setUppyOpen(false);
       },
       onSuccess: (data, variables) => {
         console.log("Successfully processed PDF:", data);
@@ -230,9 +219,7 @@ function App() {
 
   useEffect(() => {
     if (gameState === "stopped") {
-      // Only save record if not signed in (DB records are handled in StatusBar)
       if (!session.data) {
-        // Use the Zustand action instead of direct localStorage manipulation
         useRecordStore.getState().addLocalRecord({
           wpm: useRecordStore.getState().wpm,
           time: useRecordStore.getState().time,
@@ -243,7 +230,6 @@ function App() {
     }
   }, [gameState, session.data]);
 
-  // Load initial records on mount
   useEffect(() => {
     if (!session.data) {
       useRecordStore.getState().loadInitialLocalRecords();
@@ -252,18 +238,15 @@ function App() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Check if Enter was pressed AND gameState is "stopped"
       if (event.key === "Enter" && gameState === "stopped") {
         console.log("Enter pressed while game was stopped. Resetting game.");
-        event.preventDefault(); // Prevent any default Enter behavior (like form submission if applicable)
+        event.preventDefault();
         resetGame();
       }
     };
 
-    // Add event listener to the window
     window.addEventListener("keydown", handleKeyDown);
 
-    // Cleanup function: remove event listener when component unmounts or before effect re-runs
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
@@ -278,7 +261,7 @@ function App() {
           onS3UploadSuccess={(data: { filename: string; s3Key: string }) => {
             addPdfToProcess(data);
           }}
-          onUppyDone={() => setUppyOpen(false)} // Prop to close modal when Uppy is "done"
+          onUppyDone={() => setUppyOpen(false)}
         />
       </Modal>
 

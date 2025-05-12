@@ -14,31 +14,24 @@ export default function RecordList({ resetGame }: RecordListProps) {
   const localRecords = useRecordStore((state) => state.localRecords);
   const session = useSession();
 
-  //  No longer need useEffect for localStorage - we get records directly from Zustand
-
   const { data: dbRecords, isLoading: isLoadingDbRecords } =
     api.typingEntry.getAll.useQuery(undefined, {
       enabled: gameState === "stopped" && !!session.data,
     });
 
-  // Use database records if signed in, otherwise use Zustand local records
   const recordsToDisplay = session.data ? dbRecords : localRecords;
 
-  // Simple loading state when fetching from DB
   if (session.data && isLoadingDbRecords) {
     return (
       <p className="py-4 text-center text-sm text-gray-500">Loading records…</p>
     );
   }
 
-  // Simple loading placeholder d
-  // uring transition periods
   const isAddingRecord =
     gameState === "stopped" &&
     ((session.data && isLoadingDbRecords) ||
       (!session.data && (recordsToDisplay || []).length === 0));
 
-  // Safe empty check
   if (!recordsToDisplay || recordsToDisplay.length === 0) {
     if (isAddingRecord) {
       return (
@@ -52,7 +45,6 @@ export default function RecordList({ resetGame }: RecordListProps) {
     );
   }
 
-  // Safe access to records for calculations
   const records = recordsToDisplay;
 
   let totalWpm = 0;
