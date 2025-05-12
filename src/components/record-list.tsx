@@ -78,15 +78,12 @@ export default function RecordList({ resetGame }: RecordListProps) {
       {" "}
       <div className="relative mx-auto w-[23rem]">
         <section className="w-full">
-          {" "}
-          <div className="flex justify-center">
-            <button
-              onClick={resetGame}
-              className="w-full cursor-pointer border border-gray-300 text-center font-mono text-xs text-gray-300 transition-colors hover:text-gray-500 dark:cursor-pointer dark:border-zinc-600 dark:text-zinc-400 dark:hover:text-zinc-200"
-            >
-              reset
-            </button>
-          </div>
+          <button
+            onClick={resetGame}
+            className="w-full cursor-pointer border border-gray-300 text-center font-mono text-xs text-gray-300 transition-colors hover:text-gray-500"
+          >
+            reset
+          </button>
           <ul className="divide-y divide-gray-200 dark:divide-zinc-700">
             {isAddingRecord && (
               <li className="grid animate-pulse grid-cols-[6rem_5rem_4rem_5rem] gap-x-4 bg-gray-50 py-2 dark:bg-zinc-800">
