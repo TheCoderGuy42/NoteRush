@@ -268,6 +268,7 @@ function App() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [gameState, resetGame]);
+
   return (
     <>
       <Toaster position="top-right" />
