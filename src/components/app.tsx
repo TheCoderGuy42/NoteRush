@@ -54,7 +54,7 @@ function App() {
     enabled: !!session.data,
   });
 
-  const selectPdf = (pdfId: number) => {
+  const selectPdf = (pdfId: number | null) => {
     setSelectedPdf(pdfId);
     setInput("");
     setGameState("idle");

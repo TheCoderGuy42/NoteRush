@@ -7,7 +7,7 @@ import { useState } from "react";
 import clsx from "clsx";
 
 interface PdfDrawerProps {
-  selectPdf: (pdfId: number) => void;
+  selectPdf: (pdfId: number | null) => void;
 }
 
 export default function PickButton({ selectPdf }: PdfDrawerProps) {
@@ -61,8 +61,13 @@ export default function PickButton({ selectPdf }: PdfDrawerProps) {
                         : "hover:bg-zinc-100 dark:hover:bg-zinc-800",
                     )}
                     onClick={() => {
-                      selectPdf(id);
-                      setSelected(id);
+                      if (id !== isSelected) {
+                        selectPdf(id);
+                        setSelected(id);
+                      } else {
+                        selectPdf(null);
+                        setSelected(-1);
+                      }
                     }}
                   >
                     <div className="mb-1 flex justify-between font-mono">
