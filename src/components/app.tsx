@@ -252,7 +252,10 @@ function App() {
       </div>
 
       {target && (
-        <div className={isActive(gameState) ? "" : "hidden"} onClick={focus}>
+        <div
+          className={`flex h-[calc(100vh-8rem)] items-center ${isActive(gameState) ? "" : "hidden"}`}
+          onClick={focus}
+        >
           <TypingArea target={target} input={input} />
         </div>
       )}

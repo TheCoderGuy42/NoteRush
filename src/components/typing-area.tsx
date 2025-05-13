@@ -163,7 +163,7 @@ function TypingArea(props: TypingAreaInt) {
 
   return (
     <>
-      <div className="flex flex-col justify-center">
+      <div className="w-full">
         <StatusBar
           targetLength={target.length}
           inputLength={input.length}
